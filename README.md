@@ -1,2 +1,1 @@
-# final_project_senai
-Final Project of Post Graduation on Senai - 2020
+# Final Project Senai - 2020
