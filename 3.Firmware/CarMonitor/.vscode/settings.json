@@ -1,0 +1,27 @@
+{
+    "files.associations": {
+        "GTI-NONPROD-CI": "groovy",
+        "ACS-PROD-CI": "jenkinsfile",
+        "GTI-PROD-CI": "jenkinsfile",
+        "ACS-RELEASE-PIPELINE": "jenkinsfile",
+        "ACS-NONPROD-CI": "jenkinsfile",
+        "*.tpp": "cpp",
+        "*.tcc": "cpp",
+        "cmath": "cpp",
+        "iomanip": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp",
+        "sstream": "cpp",
+        "functional": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "initializer_list": "cpp",
+        "algorithm": "cpp",
+        "random": "cpp",
+        "limits": "cpp"
+    }
+}
