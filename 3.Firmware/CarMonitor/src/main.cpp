@@ -5,7 +5,6 @@
 
 //Variables
 const float FW_VERSION = 1.0;
-
 unsigned long healthPreviousMillis = 0;
 unsigned long sensorPreviousMillis = 0;
 unsigned long healthInterval = 0;
@@ -59,10 +58,6 @@ void setup()
     updateConfiguration(false);
     log_d("update Configuration - OK");
 
-    // log_d("Configuring Bluetooth");
-    // setup_bluetooth();
-    // log_d("Configuration Bluetoot - OK");
-
     log_d("checking for updates");
     checkUpdate("");
     log_d("checking for updates - OK");
@@ -86,7 +81,7 @@ void loop()
     unsigned long currentMillis = millis();
 
     if (currentMillis - healthPreviousMillis >= healthInterval)
-    {    
+    {
         sendHealthStatus();
         healthPreviousMillis = currentMillis;
     }

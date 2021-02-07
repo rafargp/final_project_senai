@@ -20,26 +20,33 @@ void sendSensorData(){
 
     log_d("send sensor data");
        
+    log_d("requesting sensor data");
+    float rpm = getRPM();
+    float kmh = getKmh();
+
+    if(rpm == 0 && kmh == 0) return;
+
     log_d("creating json payload");
     StaticJsonDocument<256> json;
     
     json["car_id"] = CAR_ID;
     JsonArray sensors = json.createNestedArray("sensors");
     JsonObject sensors_0 = sensors.createNestedObject();
-    sensors_0["sensor"] = "Engine speed";
+    sensors_0["sensor"] = "Engine Speed";
     sensors_0["unit"] = "RPM";
-    sensors_0["value"] = getRPM();
+    sensors_0["value"] = rpm;
     JsonObject sensors_1 = sensors.createNestedObject();
-    sensors_1["sensor"] = "Vehicle speed";
+    sensors_1["sensor"] = "Vehicle Speed";
     sensors_1["unit"] = "Km/h";
-    sensors_1["value"] = getKmh();
+    sensors_1["value"] = kmh;
     JsonObject sensors_2 = sensors.createNestedObject();
-    sensors_2["sensor"] = "Ambient air temperature";
+    sensors_2["sensor"] = "Ambient Air Temperature";
     sensors_2["unit"] = "Celsius";
     sensors_2["value"] = getAirTemp();
 
     String payload = "";
     serializeJson(json, payload);
+
     const char *c_payload = payload.c_str();
     log_d("payload: %s", c_payload);
     int p_length = strlen(c_payload);
@@ -55,7 +62,7 @@ void sendHealthStatus(){
     log_d("send health status");
 
     log_d("update gsm data to sent");
-    getLocation();
+    if(!getLocation()) return;
         
     log_d("creating json payload");
     StaticJsonDocument<256> json;

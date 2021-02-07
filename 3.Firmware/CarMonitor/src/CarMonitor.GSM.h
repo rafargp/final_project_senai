@@ -79,19 +79,18 @@ void setup_gsm() {
   log_i("connected to GSM Internet");
   printOledTextSingleLine("Setup GSM OK");
 }
-void getLocation(){
+bool getLocation(){
   log_d("getting date and location");
-
-  for (int8_t i = 15; i; i--) {
-      log_d("Requesting current GSM location");
-      if (modem.getGsmLocation(&lat, &lon, &accuracy, &year, &month, &day, &hour, &minute, &sec)) {
-          hour = hour - 3;
-          log_d("Accuracy: %f", accuracy);
-          log_d("Location: %s,%s", String(lon, 10).c_str(), String(lat, 10).c_str());
-          log_d("Date/Time: %i/%i/%i %i:%i:%i", day, month, year, hour, minute, sec);
-          break;
-      } else {
-          log_d("Couldn't get GSM location");
-      }
+  bool result = modem.getGsmLocation(&lat, &lon, &accuracy, &year, &month, &day, &hour, &minute, &sec);
+  
+  log_d("Requesting current GSM location");
+  if (result) {
+      hour = hour - 3;
+      log_d("Accuracy: %f", accuracy);
+      log_d("Location: %s,%s", String(lon, 10).c_str(), String(lat, 10).c_str());
+      log_d("Date/Time: %i/%i/%i %i:%i:%i", day, month, year, hour, minute, sec);
+  } else {
+      log_d("Couldn't get GSM location");
   }
+  return result;
 }
