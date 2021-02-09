@@ -88,9 +88,9 @@ let client = {
     selectCar: function(id){
         this.setupChart();
 
-        let dataRPM = server.getSensor(id,"Engine Speed").map(x => parseFloat(x.sensorValue));
-        let dataKmh = server.getSensor(id,"Vehicle Speed").map(x => parseFloat(x.sensorValue));
-
+        let dataRPM = server.getSensor(id,"Engine Speed").map(x => [ Date.parse(x.registerDate), parseFloat(x.sensorValue) ]);
+        let dataKmh = server.getSensor(id,"Vehicle Speed").map(x => [ Date.parse(x.registerDate), parseFloat(x.sensorValue) ]);
+        
         carChart.series[0].setData(dataKmh);
         carChart.series[1].setData(dataRPM);
 
@@ -202,7 +202,7 @@ let lineChart = {
         return Highcharts.chart(`${id}`, {
             chart: { zoomType: 'xy' },
             title: { text: text },
-            xAxis: [{  categories: [], crosshair: true }],
+            xAxis: [{ type: 'datetime', crosshair: true }],
             yAxis: [{
                 labels: {
                     format: '{value} RPM',
@@ -240,12 +240,11 @@ let lineChart = {
                 type: 'column',
                 name: 'Velocidade',
                 tooltip: { valueSuffix: ' Km/h' }
-        
             }, {
                 name: 'Motor',
                 type: 'spline',
                 tooltip: { valueSuffix: ' RPM' }
-            }]
+            }],
         });
     },
     setPoint(chart,rpm,kmh){
