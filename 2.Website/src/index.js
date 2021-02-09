@@ -1,6 +1,7 @@
 let rpmChart = null;
 let kmhChart = null;
 let carChart = null;
+let mqtt;
 
 $(document).ready(function(){
 
@@ -43,7 +44,6 @@ let client = {
         this.setupMQTT();
     },
     setupMQTT: function(){
-        var mqtt;
         var host="rafaelgomes.ddns.net";
         var port=9001;
         mqtt = new Paho.MQTT.Client(host,port,"clientjs");
@@ -56,23 +56,26 @@ let client = {
 
         mqtt.onMessageArrived = client.onMessageArrivedMQTT;
             
-        mqtt.connect(options); //connect
+        mqtt.connect(options);
 	
     },
     onFailureMQTT: function(message) {
         console.log(message);  
     },
     onConnectMQTT: function(){
-        console.log("Connected ");
-        mqtt.subscribe("/sensor1");
-        message = new Paho.MQTT.Message("Hello World");
-        message.destinationName = "/sensor1";
-        mqtt.send(message);
+        mqtt.subscribe("/sensors");
+        // message = new Paho.MQTT.Message("Hello World");
+        // message.destinationName = "/sensor1";
+        // mqtt.send(message);
     },
     onMessageArrivedMQTT: function(message){
-        out_msg="Message received "+msg.payloadString+"<br>";
-        out_msg=out_msg+"Message received Topic "+msg.destinationName;
-        console.log(out_msg);
+        console.log(`MQTT: ${message}`);
+        let lSensors = message.sensors.length;
+        for(x=0; x < lSensors; x++){
+            let item = message.sensors[x];
+            query += `VALUES ('${data.car_id}','${item.sensor}','${item.value}','${item.unit}',STR_TO_DATE( "2021-01-01 00:00:00", "%Y-%m-%d %H:%i:%s" ));\n`;
+        }
+        return msg;
     },
     setupChart: function(){
         if(rpmChart != null) gaugeChart.clearChart(rpmChart);
@@ -85,34 +88,62 @@ let client = {
     selectCar: function(id){
         this.setupChart();
 
-        let sensorsData = server.getSensors(id);
-        $(sensorsData).each(function(i,item){
-            gaugeChart.setPoint(rpmChart,item.rpm);
-            gaugeChart.setPoint(kmhChart,item.kmh);
-            lineChart.setPoint(carChart,item.rpm,item.kmh);
-        });
+        let dataRPM = server.getSensor(id,"Engine Speed").map(x => parseFloat(x.sensorValue));
+        let dataKmh = server.getSensor(id,"Vehicle Speed").map(x => parseFloat(x.sensorValue));
+
+        carChart.series[0].setData(dataKmh);
+        carChart.series[1].setData(dataRPM);
+
+        gaugeChart.setPoint(rpmChart,dataRPM[dataRPM.length-1]);
+        gaugeChart.setPoint(kmhChart,dataKmh[dataKmh.length-1]);
     }
 };
 let server = {
     getCars: function(){
-        return [
-            {Id: 1, VIN: '12ZXVSQ235GJD12', Name: 'Polo'},
-            {Id: 2, VIN: '98667LOHADPOID1', Name: 'T-Cross'},
-        ];
+        let cars = [];
+        $.ajax({
+			url: `http://rafaelgomes.ddns.net:1880/api/cars/1`,
+			method: "GET",
+			headers: { "Accept": "application/json; odata=verbose" },
+			async: false
+        }).done(function(data) {
+            $(data).each(function(i,car){
+                cars.push({Id: car.id, VIN: car.carVIN, Name: `Carro ${car.id}`});
+            });    
+        });
+        return cars;
     },
     getSensors: function(carId){
-        let data = [
-            {carId:1, rpm: 900, kmh: 0 },
-            {carId:1, rpm: 1000, kmh: 10 },
-            {carId:1, rpm: 1200, kmh: 20 },
-            {carId:1, rpm: 1300, kmh: 30 },
-            {carId:1, rpm: 2000, kmh: 40 },
-            {carId:1, rpm: 2500, kmh: 50 },
-            {carId:2, rpm: 950, kmh: 0 },
-            {carId:2, rpm: 3000, kmh: 70 },
-        ];
-        
-        return data.filter(x => x.carId == carId);
+        let sensors = [];
+        $.ajax({
+			url: `http://rafaelgomes.ddns.net:1880/api/car/${carId}/sensors`,
+			method: "GET",
+			headers: { "Accept": "application/json; odata=verbose" },
+			async: false
+        }).done(function(data) {
+            let grouped = Helper.groupBy(data,"registerDate");
+            $(grouped.groups).each(function(i,group){
+                let sensor_data = {};
+                $(group).each(function(x,sensor){
+                    sensor_data["CarId"] = sensor.carId;
+                    sensor_data[sensor.sensorName] = parseFloat(sensor.sensorValue);
+                });
+                sensors.push(sensor_data);
+            });
+        });
+        return sensors;
+    },
+    getSensor: function(carId,sensorName){
+        let sensor = [];
+        $.ajax({
+			url: `http://rafaelgomes.ddns.net:1880/api/car/${carId}/sensor/${sensorName}`,
+			method: "GET",
+			headers: { "Accept": "application/json; odata=verbose" },
+			async: false
+        }).done(function(data) {
+            sensor = data;
+        });
+        return sensor;
     }
 };
 let gaugeChart = {
@@ -205,9 +236,9 @@ let lineChart = {
                 backgroundColor: Highcharts.defaultOptions.legend.backgroundColor || 'rgba(255,255,255,0.25)'
             },
             series: [{
-                name: 'Velocidade',
-                type: 'column',
                 yAxis: 1,
+                type: 'column',
+                name: 'Velocidade',
                 tooltip: { valueSuffix: ' Km/h' }
         
             }, {
@@ -225,4 +256,20 @@ let lineChart = {
         while(chart.series.length > 0) chart.series[0].remove(true)
     }
 }
- 
+let Helper = {
+    groupBy: function (collection, property) {
+		var i = 0, val, index,
+			values = [], result = [];
+		for (; i < collection.length; i++) {
+			val = collection[i][property];
+			index = values.indexOf(val);
+			if (index > -1)
+				result[index].push(collection[i]);
+			else {
+				values.push(val);
+				result.push([collection[i]]);
+			}
+		}
+		return { groups: result, keys: values };
+	}
+}
