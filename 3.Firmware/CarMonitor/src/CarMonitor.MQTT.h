@@ -21,25 +21,29 @@ void sendSensorData(){
     log_d("send sensor data");
        
     log_d("requesting sensor data");
+    
     float rpm = getRPM();
     float kmh = getKmh();
 
     if(rpm == 0 && kmh == 0) return;
 
     log_d("creating json payload");
-    StaticJsonDocument<256> json;
+    StaticJsonDocument<512> json;
     
     json["car_id"] = CAR_ID;
     JsonArray sensors = json.createNestedArray("sensors");
     JsonObject sensors_0 = sensors.createNestedObject();
+    sensors_0["pid"] = "0C";
     sensors_0["sensor"] = "Engine Speed";
     sensors_0["unit"] = "RPM";
     sensors_0["value"] = rpm;
     JsonObject sensors_1 = sensors.createNestedObject();
+    sensors_1["pid"] = "0D";
     sensors_1["sensor"] = "Vehicle Speed";
     sensors_1["unit"] = "Km/h";
     sensors_1["value"] = kmh;
     JsonObject sensors_2 = sensors.createNestedObject();
+    sensors_2["pid"] = "46";
     sensors_2["sensor"] = "Ambient Air Temperature";
     sensors_2["unit"] = "Celsius";
     sensors_2["value"] = getAirTemp();
@@ -54,7 +58,7 @@ void sendSensorData(){
     boolean result = client.publish(mqtt_sensors, c_payload, p_length);
     if (result) log_i("sensor payload sent");
     else log_e("failed to publish sent payload");
-    delay(100);
+    delay(10);
 }
 void sendHealthStatus(){
     if (DEVICE_ID == "") return;
@@ -66,10 +70,10 @@ void sendHealthStatus(){
         
     log_d("creating json payload");
     StaticJsonDocument<256> json;
-    
-    json["id"] = DEVICE_ID;
-    json["ip"] = gsm_ip;
-    json["signal"] = modem.getSignalQuality();
+        
+    json["device_id"] = DEVICE_ID;
+    json["ip"] = getIP();
+    json["signal"] = getSignalQuality();
     json["gsm_date"] = String(year) + "-" + String(month) + "-" + String(day);
     json["gsm_time"] = String(hour) + ":" + String(minute) + ":" + String(sec);
     json["location_lo"] = String(lon, 8);
@@ -95,7 +99,7 @@ void registerDevice()
     printOledTextSingleLine("Registrando Dispositivo");
     log_d("creating json payload");
     StaticJsonDocument<256> json;
-    json["id"] = modem.getIMEI();
+    json["imei"] = modem.getIMEI();
     json["ccid"] = modem.getSimCCID();
     json["imsi"] = modem.getIMSI();
     json["operator"] = modem.getOperator();
@@ -121,7 +125,16 @@ void registerCar()
     log_d("creating json payload");
 
     String VIN = "";
-    while(VIN == "") VIN = getVINCar();
+    int max_try = 5;
+    while(VIN == "") {
+        if(max_try <= 0) {
+            log_w("Could not get VIN CAR");
+            ESP.restart(); 
+        }
+        log_d("Trying to get VIN CAR: %i",(5-max_try)+1);
+        VIN = getVINCar();
+        max_try--;
+    }
 
     StaticJsonDocument<256> json;
     json["deviceId"] = DEVICE_ID;
@@ -183,15 +196,13 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
     log_d("MQTT Callback");
     String strPayload = "";
 
-    for (int i = 0; i < length; i++)
-        strPayload += (char)payload[i];
-    log_d("Receive MQTT message (topic: %s | payload: %s)", topic, strPayload);
+    for (int i = 0; i < length; i++) strPayload += (char)payload[i];
+    log_d("Receive MQTT message (topic: %s | payload: %s)", topic, strPayload.c_str());
 
     if (strcmp(topic, mqtt_login_device) == 0) loginDevice(payload);
     else if (strcmp(topic, mqtt_login_car) == 0) loginCar(payload);
     else log_e("Topic is not implemented %s", topic);
 }
-
 void setupMQTT()
 {
     log_d("setting up MQTT");
@@ -208,7 +219,6 @@ void setupMQTT()
     client.setCallback(mqttCallback);
     printOledTextSingleLine("Configurando MQTT - OK");
 }
-
 void connectMQTT()
 {
     while (!client.connected())
@@ -244,9 +254,7 @@ void connectMQTT()
 
                 delay(100);
             }
-            if(DEVICE_ID == "" || CAR_ID == "") {
-                registerDevice();
-            }
+            if(DEVICE_ID == "" || CAR_ID == "") registerDevice();
         }
         else
         {

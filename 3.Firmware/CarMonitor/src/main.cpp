@@ -13,6 +13,7 @@ unsigned long sensorInterval = 0;
 float lat = 0, lon = 0, accuracy = 0;
 int year = 0, month = 0, day = 0;
 int hour = 0, minute = 0, sec = 0;
+bool check_update;
 
 String DEVICE_ID;
 String CAR_ID;
@@ -59,7 +60,8 @@ void setup()
     log_d("update Configuration - OK");
 
     log_d("checking for updates");
-    checkUpdate("");
+    check_update = config["check_update"].as<bool>();
+    if(check_update) checkUpdate("");
     log_d("checking for updates - OK");
 
     log_d("setup MQTT");
@@ -79,7 +81,7 @@ void loop()
     connectMQTT();
 
     unsigned long currentMillis = millis();
-
+    
     if (currentMillis - healthPreviousMillis >= healthInterval)
     {
         sendHealthStatus();
@@ -90,4 +92,6 @@ void loop()
         sendSensorData();
         sensorPreviousMillis = currentMillis;
     }
+    
+    printOledTextSingleLine("TCC - Senai");
 }

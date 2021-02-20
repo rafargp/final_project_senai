@@ -29,7 +29,7 @@ String getSupportedPIDs()
     while (CAN.parsePacket() == 0 || CAN.read() < 6 || CAN.read() != 0x41 || CAN.read() != pid){
       if(millis() - currentMillis > TIMEOUT) {
         log_d("getting supprted PIDs timeout");
-        return "";
+        break;
       }  
     }
 

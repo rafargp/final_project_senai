@@ -26,6 +26,8 @@ bool connect_gprs(){
   if(modem.isGprsConnected()) {
     log_d("modem already connected to the GPRS network");
     return true;
+  }else{
+    gsm_ip = "";
   }
   
   printOledTextSingleLine("Conctando a Internet\nAPN:"+String(gsm_apn));
@@ -33,8 +35,6 @@ bool connect_gprs(){
     log_e("gsm failed to connect to the GRPS network");
     ESP.restart();
   }
-  gsm_ip = modem.localIP().toString();
-  log_d("New IP: %s",gsm_ip.c_str());
   return true;
 }
 
@@ -58,7 +58,7 @@ void setup_gsm() {
 
   log_d("begin serial modem");
   SerialAT.begin(115200,SERIAL_8N1,MODEM_RX,MODEM_TX);
-  delay(3000);
+  delay(2000);
 
   log_d("begin GSM Modem");
   printOledTextSingleLine("Iniciando Modem GSM");
@@ -93,4 +93,13 @@ bool getLocation(){
       log_d("Couldn't get GSM location");
   }
   return result;
+}
+String getIP(){
+  if(gsm_ip != "") return gsm_ip;
+  gsm_ip = modem.localIP().toString();
+  log_d("New IP: %s",gsm_ip.c_str());
+  return gsm_ip;
+}
+int16_t getSignalQuality(){
+  return modem.getSignalQuality();
 }
