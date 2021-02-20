@@ -2,8 +2,8 @@ let rpmChart = null;
 let kmhChart = null;
 let carChart = null;
 let mqtt;
-let startDate = moment().startOf('day').add(0, 'hour').toISOString();
-let endDate = moment().toISOString();
+let startDate = moment().startOf('day').subtract(3,'hours').toISOString();
+let endDate = moment().subtract(3,'hours').toISOString();
 let selectedCar = -1;
 $(document).ready(function () {
 
@@ -30,7 +30,6 @@ $(document).ready(function () {
 
     $('#reservationtime').daterangepicker(
         {
-            lang: 'pt-BR',
             showTimezone: true,
             timePicker: true,
             timePickerIncrement: 1,
@@ -41,12 +40,12 @@ $(document).ready(function () {
             startDate: moment().startOf('day').add(0, 'hour'),
             endDate: moment(),
             locale: {
-                format: 'DD/MM/YYYY hh:mm A'
+                format: 'DD/MM/YYYY hh:mm:ss A'
             },
         },
         function (start, end) {
-            startDate = start.toISOString();
-            endDate = end.toISOString();
+            startDate = start.subtract(3,'hours').toISOString();
+            endDate = end.subtract(3,'hours').toISOString();
             client.selectCar(selectedCar,startDate,endDate);
         }
     );
@@ -134,6 +133,15 @@ let client = {
 
         gaugeChart.setPoint(rpmChart, dataRPM[dataRPM.length - 1]);
         gaugeChart.setPoint(kmhChart, dataKmh[dataKmh.length - 1]);
+
+        let maxRPM = 0;
+        if(dataRPM.length > 0) maxRPM = Math.max.apply(Math, dataRPM.map(function(o) { return o[1]; }))
+        let maxKMH = 0;
+        if(dataKmh.length > 0) maxKMH = Math.max.apply(Math, dataKmh.map(function(o) { return o[1]; }))
+
+        $("#TopKmh").html(`${maxKMH} Km/h`)
+        $("#TopRpm").html(`${maxRPM} RPM`);
+
     }
 };
 let gaugeChart = {

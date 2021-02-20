@@ -119,9 +119,9 @@
                   <a class="btn btn-app" id="btnDashMotor">
                     <i class="fas fa-cog"></i> Motor
                   </a>
-                  <a class="btn btn-app" id="btnDashLocation">
+                  <!-- <a class="btn btn-app" id="btnDashLocation">
                     <i class="fas fa-map-pin"></i> Localização
-                  </a>
+                  </a> -->
                 </div>
                 
                 <div class="overlay d-none">
@@ -139,11 +139,9 @@
                     </button>
                   </div>
                 </div>
-                <div class="card-body" id="dashboardContainer">
+                <div class="card-body">
                   <div class="row">
                     <div class="form-group">
-                      <label>Date and time range:</label>
-    
                       <div class="input-group">
                         <div class="input-group-prepend">
                           <span class="input-group-text"><i class="far fa-clock"></i></span>
@@ -179,14 +177,35 @@
                     </div>
                   </div>
                 </div>
-                
+                <div class="card-footer">
+                  <div class="row">
+                    <div class="col">
+                      <div class="description-block border-right">
+                        <h5 class="description-header" id="TopRpm">0</h5>
+                        <span class="description-text">Top RPM</span>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="description-block border-right">
+                        <h5 class="description-header">---</h5>
+                        <span class="description-text">Perfil do Condutor</span>
+                      </div>
+                    </div>
+                    <div class="col">
+                      <div class="description-block border-right">
+                        <h5 class="description-header" id="TopKmh">0</h5>
+                        <span class="description-text">Top Speed</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div class="overlay d-none">
                   <i class="fas fa-2x fa-sync-alt"></i>
                 </div>
               </div>
             </div>
           </div>
-          <div class="row d-none" id="locationDashboard">
+          <!-- <div class="row d-none" id="locationDashboard">
             <div class="col-md-12">
               <div class="card card-danger">
                 <div class="card-header">
@@ -205,7 +224,7 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </section>
     </div>
