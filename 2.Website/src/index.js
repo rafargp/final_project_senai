@@ -97,7 +97,7 @@ let client = {
 
         $(cars).each(function (i, item) {
             let html = $("#carsContainer").html();
-            html += `<a class="btn btn-app" name="btnCar" data-id="${item.carVIN}"><i class="fas fa-car"></i>${item.Name == undefined ? item.carVIN : item.Name}</a>`;
+            html += `<a class="btn btn-app" name="btnCar" data-id="${item.carVIN}"><i class="fas fa-car"></i>${item.name == undefined ? item.carVIN : item.name}</a>`;
             $("#carsContainer").html(html);
         });
 
