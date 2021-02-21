@@ -5,6 +5,8 @@ let mqtt;
 let startDate = moment().startOf('day').subtract(3,'hours').toISOString();
 let endDate = moment().subtract(3,'hours').toISOString();
 let selectedCar = -1;
+let startRPM = 0;
+let startKmh = 0;
 $(document).ready(function () {
 
     $(document).on('click', "#btnDashMotor", function (e) {
@@ -23,11 +25,42 @@ $(document).ready(function () {
         e.preventDefault();
         let id = $(this).data("id");
         selectedCar = id;
-        client.selectCar(id,startDate,endDate);
+        client.selectCar(id,startDate,endDate,startRPM,startKmh);
+
     });
-
-    client.setup();
-
+    $(document).on("change","#rpmFilter",function(e){
+        e.preventDefault();
+        startRPM = $(this).val();
+        client.selectCar(selectedCar,startDate,endDate,startRPM,startKmh);
+    });
+    $(document).on("change","#kmhFilter",function(e){
+        e.preventDefault();
+        startKmh = $(this).val();
+        client.selectCar(selectedCar,startDate,endDate,startRPM,startKmh);
+    });
+    $(document).on("click","#btnTacometer",function(e){
+        let visible = $(this).data("tacometer");
+        if(visible == 1) {
+            $(this).data("tacometer",0);
+            $("#rpmChartContainer").parent().removeClass("col-sm-3");
+            $("#rpmChartContainer").parent().hide()
+            $("#kmhChartContainer").parent().removeClass("col-sm-3");
+            $("#kmhChartContainer").parent().hide()
+            $("#carChartContainer").parent().removeClass("col-sm-6");
+            $("#carChartContainer").parent().addClass("col-sm-12");
+            $(this).html(`<i class="fas fa-compress-arrows-alt"></i>`);
+        }else{
+            $(this).data("tacometer",1);
+            $("#rpmChartContainer").parent().addClass("col-sm-3");
+            $("#rpmChartContainer").parent().show()
+            $("#kmhChartContainer").parent().addClass("col-sm-3");
+            $("#kmhChartContainer").parent().show()
+            $("#carChartContainer").parent().removeClass("col-sm-12");
+            $("#carChartContainer").parent().addClass("col-sm-6");
+            $(this).html(`<i class="fas fa-expand-arrows-alt"></i>`);
+        }
+        client.selectCar(selectedCar,startDate,endDate,startRPM,startKmh);
+    });
     $('#reservationtime').daterangepicker(
         {
             showTimezone: true,
@@ -46,10 +79,14 @@ $(document).ready(function () {
         function (start, end) {
             startDate = start.subtract(3,'hours').toISOString();
             endDate = end.subtract(3,'hours').toISOString();
-            client.selectCar(selectedCar,startDate,endDate);
+            client.selectCar(selectedCar,startDate,endDate,startRPM,startKmh);
         }
     );
-    
+
+    $("#rpmFilter").val(startRPM);
+    $("#kmhFilter").val(startKmh);
+
+    client.setup();
     
 });
 let client = {
@@ -60,7 +97,7 @@ let client = {
 
         $(cars).each(function (i, item) {
             let html = $("#carsContainer").html();
-            html += `<a class="btn btn-app" name="btnCar" data-id="${item.CarVin}"><i class="fas fa-car"></i>${item.Name == undefined ? item.carVIN : item.Name}</a>`;
+            html += `<a class="btn btn-app" name="btnCar" data-id="${item.carVIN}"><i class="fas fa-car"></i>${item.Name == undefined ? item.carVIN : item.Name}</a>`;
             $("#carsContainer").html(html);
         });
 
@@ -111,19 +148,10 @@ let client = {
         kmhChart = gaugeChart.setup("kmhChartContainer", 0, 220, "Velocidade", "velocidade", "Km/h", "#00F");
         carChart = lineChart.setup("carChartContainer", "Resumo");
     },
-    selectCar: function (id, startDate = null, endDate = null) {
+    selectCar: function (id, startDate = null, endDate = null, rpm = 0, kmh = 0) {
         this.setupChart();
-        let dataRPM = Cars.getSensorByPID(id, "0C");
-        let dataKmh = Cars.getSensorByPID(id, "0D");
-
-        if (startDate != null) {
-            dataRPM = dataRPM.filter(x => new Date(x.receive_date) >= new Date(startDate));
-            dataKmh = dataKmh.filter(x => new Date(x.receive_date) >= new Date(startDate));
-        }
-        if (endDate != null) {
-            dataRPM = dataRPM.filter(x => x.receive_date <= endDate);
-            dataKmh = dataKmh.filter(x => x.receive_date <= endDate);
-        }
+        let dataRPM = Cars.getSensorByPID(id, "0C",startDate,endDate,rpm);
+        let dataKmh = Cars.getSensorByPID(id, "0D",startDate,endDate,kmh);
 
         dataRPM = dataRPM.map(x => [Date.parse(x.receive_date), x.value]);
         dataKmh = dataKmh.map(x => [Date.parse(x.receive_date), x.value]);
@@ -141,7 +169,7 @@ let client = {
 
         $("#TopKmh").html(`${maxKMH} Km/h`)
         $("#TopRpm").html(`${maxRPM} RPM`);
-
+        $("#countRecords").html(`Quantidade de Registros (RPM: ${dataRPM.length} | KMH: ${dataKmh.length})`);
     }
 };
 let gaugeChart = {

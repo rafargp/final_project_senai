@@ -47,7 +47,12 @@ const Cars = {
 			async: false,
 			headers: { "ACCEPT": "application/json;odata=verbose" },
 		});
-		return result.responseJSON;
+		let cars = [];
+		$(result.responseJSON[0].cars).each(function(x,car){
+			let result = cars.find(x => x.carVIN == car.carVIN);
+			if(result == undefined) cars.push(car);
+		})
+		return cars;
     },
     getById: function(id){
         var result = $.ajax({
@@ -67,13 +72,24 @@ const Cars = {
 		});
 		return result.responseJSON;
     },
-    getSensorByPID: function(id,pid){
+    getSensorByPID: function(id,pid,startDate=null,endDate=null,value=null){
         var result = $.ajax({
 			url: `${endpoint}/car/${id}/sensor/${pid}`,
+			data: { startDate: startDate, endDate: endDate, value: value },
 			type: "GET",
 			async: false,
 			headers: { "ACCEPT": "application/json;odata=verbose" },
 		});
 		return result.responseJSON;
-    }
+	},
+	update: function(id,data){
+		var result = $.ajax({
+			url: `${endpoint}/car/${id}`,
+			data: data,
+			type: "POST",
+			async: false,
+			headers: { "ACCEPT": "application/json;odata=verbose" },
+		});
+		return result.responseJSON;
+	}
 };
