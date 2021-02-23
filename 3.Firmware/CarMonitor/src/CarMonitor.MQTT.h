@@ -11,7 +11,10 @@ char *mqtt_register_device;
 char *mqtt_register_car;
 char *mqtt_login_device;
 char *mqtt_login_car;
+char *mqtt_command;
 char *mqtt_health;
+
+unsigned long loginPreviousMillis = 0;
 
 PubSubClient client(gsm_client);
 
@@ -24,13 +27,17 @@ void sendSensorData(){
     
     float rpm = getRPM();
     float kmh = getKmh();
-
+    
     if(rpm == 0 && kmh == 0) return;
+
+    const char* car_status = (kmh == 0 ? "Stop":"Moving");
 
     log_d("creating json payload");
     StaticJsonDocument<512> json;
     
     json["car_id"] = CAR_ID;
+    json["device_id"] = DEVICE_ID;
+    json["car_status"] = car_status;
     JsonArray sensors = json.createNestedArray("sensors");
     JsonObject sensors_0 = sensors.createNestedObject();
     sensors_0["pid"] = "0C";
@@ -95,6 +102,10 @@ void registerDevice()
 {
     if (DEVICE_ID != "") return;
 
+    unsigned long currentMillis = millis();
+    if (currentMillis - loginPreviousMillis < 10000) return;
+    loginPreviousMillis = currentMillis;
+
     log_d("register device");
     printOledTextSingleLine("Registrando Dispositivo");
     log_d("creating json payload");
@@ -118,7 +129,12 @@ void registerDevice()
 }
 void registerCar()
 {
+    if (DEVICE_ID == "") return;
     if (CAR_ID != "") return;
+
+    unsigned long currentMillis = millis();
+    if (currentMillis - loginPreviousMillis < 10000) return;
+    loginPreviousMillis = currentMillis;
 
     log_d("register car");
     printOledTextSingleLine("Registrando Carro");
@@ -139,7 +155,7 @@ void registerCar()
     StaticJsonDocument<256> json;
     json["deviceId"] = DEVICE_ID;
     json["carVIN"] = VIN;
-    json["carSensor"] = getSupportedPIDs();
+    // json["carSensor"] = getSupportedPIDs();
     String payload = "";
     serializeJson(json, payload);
     const char *c_payload = payload.c_str();
@@ -191,6 +207,19 @@ void loginCar(byte *payload)
     }
     delay(500);
 }
+void commandDevice(byte *payload){
+    log_d("MQTT Command Device");
+    DynamicJsonDocument command(128);
+    if (!deserializeJson(command, payload))
+    {
+        log_d("Receive Command: %d", command);
+    }
+    else
+    {
+        log_e("error to deserialize command payload");
+    }
+    delay(10);
+}
 void mqttCallback(char *topic, byte *payload, unsigned int length)
 {
     log_d("MQTT Callback");
@@ -201,6 +230,7 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
 
     if (strcmp(topic, mqtt_login_device) == 0) loginDevice(payload);
     else if (strcmp(topic, mqtt_login_car) == 0) loginCar(payload);
+    else if (strcmp(topic, mqtt_command) == 0) commandDevice(payload);
     else log_e("Topic is not implemented %s", topic);
 }
 void setupMQTT()
@@ -245,6 +275,10 @@ void connectMQTT()
                 else if (strcmp(isFor, "login_device") == 0) mqtt_login_device = (char *)topics[x]["topic"].as<char *>();
                 else if (strcmp(isFor, "login_car") == 0) mqtt_login_car = (char *)topics[x]["topic"].as<char *>();
                 else if (strcmp(isFor, "health") == 0) mqtt_health = (char *)topics[x]["topic"].as<char *>();
+                else if (strcmp(isFor, "command") == 0 && DEVICE_ID != "") {
+                    String t_command = topics[x]["topic"].as<String>() + "/" + DEVICE_ID;
+                    mqtt_command = (char*) t_command.c_str();
+                }
                 if (strcmp(method, "publish") == 0) continue;
 
                 const char *topic = topics[x]["topic"].as<const char *>();
@@ -254,7 +288,6 @@ void connectMQTT()
 
                 delay(100);
             }
-            if(DEVICE_ID == "" || CAR_ID == "") registerDevice();
         }
         else
         {
@@ -262,5 +295,7 @@ void connectMQTT()
             delay(500);
         }
     }
+    if(DEVICE_ID == "") registerDevice();
+    if(CAR_ID == "") registerCar();
     client.loop();
 }

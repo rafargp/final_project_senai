@@ -126,18 +126,24 @@ let client = {
         console.log(message);
     },
     onConnectMQTT: function () {
-        mqtt.subscribe("/sensors");
+        
+        let data = mqtt.subscribe("/sensors");
+        console.log(data)
         // message = new Paho.MQTT.Message("Hello World");
         // message.destinationName = "/sensor1";
         // mqtt.send(message);
     },
     onMessageArrivedMQTT: function (message) {
-        console.log(`MQTT: ${message}`);
-        let lSensors = message.sensors.length;
-        for (x = 0; x < lSensors; x++) {
-            let item = message.sensors[x];
-            query += `VALUES ('${data.car_id}','${item.sensor}','${item.value}','${item.unit}',STR_TO_DATE( "2021-01-01 00:00:00", "%Y-%m-%d %H:%i:%s" ));\n`;
-        }
+        console.log(`Arrive Message MQTT`);
+        let data = JSON.parse(message._getPayloadString());
+        console.log(data);
+
+        let dataRPM = data.sensors.find(x => x.pid=="0C").value;
+        let dataKmh = data.sensors.find(x => x.pid=="0D").value;
+
+        gaugeChart.setPoint(rpmChart, dataRPM);
+        gaugeChart.setPoint(kmhChart, dataKmh);
+        
         return msg;
     },
     setupChart: function () {

@@ -92,6 +92,4 @@ void loop()
         sendSensorData();
         sensorPreviousMillis = currentMillis;
     }
-    
-    printOledTextSingleLine("TCC - Senai");
 }
