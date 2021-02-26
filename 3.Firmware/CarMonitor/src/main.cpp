@@ -17,6 +17,7 @@ bool check_update;
 
 String DEVICE_ID;
 String CAR_ID;
+String TRAVEL_ID;
 
 //Personal Library
 #include <CarMonitor.CanBus.h>

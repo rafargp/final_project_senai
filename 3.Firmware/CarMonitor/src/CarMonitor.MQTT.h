@@ -37,6 +37,7 @@ void sendSensorData(){
     
     json["car_id"] = CAR_ID;
     json["device_id"] = DEVICE_ID;
+    json["travel_id"] = TRAVEL_ID;
     json["car_status"] = car_status;
     JsonArray sensors = json.createNestedArray("sensors");
     JsonObject sensors_0 = sensors.createNestedObject();
@@ -174,6 +175,7 @@ void loginDevice(byte *payload)
     if (!deserializeJson(device, payload))
     {
         DEVICE_ID = device["id"].as<String>();
+        TRAVEL_ID = device["travel_id"].as<String>();
         printOledTextSingleLine("Dispositivo Registrado\nID:" + DEVICE_ID);
         log_d("unsubscribing login topic");
         boolean result = client.unsubscribe(mqtt_login_device);

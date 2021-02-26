@@ -24,12 +24,11 @@ let client = {
         $("#devicesCard .overlay").removeClass("d-none");
 
         let devices = Devices.getAll();
-
+        let html = "";
         $(devices).each(function (i, item) {
-            let html = $("#devicesContainer").html();
             html += `<a class="btn btn-app" name="btnDevice" data-id="${item._id}"><i class="fas fa-microchip"></i>${item.imei}</a>`;
-            $("#devicesContainer").html(html);
         });
+        $("#devicesContainer").html(html);
 
         $("#devicesCard .overlay").addClass("d-none");
     },
@@ -39,12 +38,11 @@ let client = {
 
         let cars = Cars.getByDeviceId(id);
 
+        let html = "";
         $(cars).each(function (i, item) {
-            let html = $("#carsContainer").html();
             html += `<a class="btn btn-app" name="btnCar" data-id="${item.carVIN}"><i class="fas fa-car"></i>${item.Name == undefined ? item.carVIN : item.Name}</a>`;
-            $("#carsContainer").html(html);
         });
-
+        $("#carsContainer").html(html);
         $("#carsCard .overlay").addClass("d-none");
     },
     selectCar(id){

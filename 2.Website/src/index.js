@@ -5,8 +5,8 @@ let mqtt;
 let startDate = moment().startOf('day').subtract(3,'hours').toISOString();
 let endDate = moment().subtract(3,'hours').toISOString();
 let selectedCar = -1;
-let startRPM = 0;
-let startKmh = 0;
+let carState = "All";
+
 $(document).ready(function () {
 
     $(document).on('click', "#btnDashMotor", function (e) {
@@ -25,19 +25,14 @@ $(document).ready(function () {
         e.preventDefault();
         let id = $(this).data("id");
         selectedCar = id;
-        client.selectCar(id,startDate,endDate,startRPM,startKmh);
+        client.selectCar(id,startDate,endDate,carState);
+    });
+    $(document).on("change","#CarState",function(e){
+        e.preventDefault();
+        carState = $("#CarState option:selected").val();
+        client.selectCar(selectedCar,startDate,endDate,carState);
+    });
 
-    });
-    $(document).on("change","#rpmFilter",function(e){
-        e.preventDefault();
-        startRPM = $(this).val();
-        client.selectCar(selectedCar,startDate,endDate,startRPM,startKmh);
-    });
-    $(document).on("change","#kmhFilter",function(e){
-        e.preventDefault();
-        startKmh = $(this).val();
-        client.selectCar(selectedCar,startDate,endDate,startRPM,startKmh);
-    });
     $(document).on("click","#btnTacometer",function(e){
         let visible = $(this).data("tacometer");
         if(visible == 1) {
@@ -59,7 +54,7 @@ $(document).ready(function () {
             $("#carChartContainer").parent().addClass("col-sm-6");
             $(this).html(`<i class="fas fa-expand-arrows-alt"></i>`);
         }
-        client.selectCar(selectedCar,startDate,endDate,startRPM,startKmh);
+        client.selectCar(selectedCar,startDate,endDate,carState);
     });
     $('#reservationtime').daterangepicker(
         {
@@ -68,10 +63,10 @@ $(document).ready(function () {
             timePickerIncrement: 1,
             //minDate: moment(),
             //maxDate: moment().add(6, 'month'),
-            maxDate: moment(),
+            //maxDate: moment(),
             //dateLimit: { days: 5 },
             startDate: moment().startOf('day').add(0, 'hour'),
-            endDate: moment(),
+            endDate: moment().endOf('day'),
             locale: {
                 format: 'DD/MM/YYYY hh:mm:ss A'
             },
@@ -79,12 +74,9 @@ $(document).ready(function () {
         function (start, end) {
             startDate = start.subtract(3,'hours').toISOString();
             endDate = end.subtract(3,'hours').toISOString();
-            client.selectCar(selectedCar,startDate,endDate,startRPM,startKmh);
+            client.selectCar(selectedCar,startDate,endDate,carState);
         }
     );
-
-    $("#rpmFilter").val(startRPM);
-    $("#kmhFilter").val(startKmh);
 
     client.setup();
     
@@ -126,18 +118,13 @@ let client = {
         console.log(message);
     },
     onConnectMQTT: function () {
-        
-        let data = mqtt.subscribe("/sensors");
-        console.log(data)
+        mqtt.subscribe("/sensors");
         // message = new Paho.MQTT.Message("Hello World");
         // message.destinationName = "/sensor1";
         // mqtt.send(message);
     },
     onMessageArrivedMQTT: function (message) {
-        console.log(`Arrive Message MQTT`);
         let data = JSON.parse(message._getPayloadString());
-        console.log(data);
-
         let dataRPM = data.sensors.find(x => x.pid=="0C").value;
         let dataKmh = data.sensors.find(x => x.pid=="0D").value;
 
@@ -154,10 +141,10 @@ let client = {
         kmhChart = gaugeChart.setup("kmhChartContainer", 0, 220, "Velocidade", "velocidade", "Km/h", "#00F");
         carChart = lineChart.setup("carChartContainer", "Resumo");
     },
-    selectCar: function (id, startDate = null, endDate = null, rpm = 0, kmh = 0) {
+    selectCar: function (id, startDate = null, endDate = null, carState = null) {
         this.setupChart();
-        let dataRPM = Cars.getSensorByPID(id, "0C",startDate,endDate,rpm);
-        let dataKmh = Cars.getSensorByPID(id, "0D",startDate,endDate,kmh);
+        let dataRPM = Cars.getSensorByPID(id, "0C",startDate,endDate,carState);
+        let dataKmh = Cars.getSensorByPID(id, "0D",startDate,endDate,carState);
 
         dataRPM = dataRPM.map(x => [Date.parse(x.receive_date), x.value]);
         dataKmh = dataKmh.map(x => [Date.parse(x.receive_date), x.value]);

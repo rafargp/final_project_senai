@@ -23,12 +23,9 @@
   <div class="wrapper">
 
     <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-      <ul class="navbar-nav">
+      <ul class="navbar-nav" id="MenuHContainer">
         <li class="nav-item">
           <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-        </li>
-        <li class="nav-item d-none d-sm-inline-block">
-          <a href="index.html" class="nav-link">Home</a>
         </li>
       </ul>
     </nav>
@@ -52,19 +49,7 @@
         </div>
 
         <nav class="mt-2">
-          <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-            <li class="nav-item">
-              <a href="index.html" class="nav-link">
-                <i class="nav-icon fas fa-home"></i>
-                <p>Home</p>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="cars.html" class="nav-link">
-                <i class="nav-icon fas fa-car"></i>
-                <p>Carros</p>
-              </a>
-            </li>
+          <ul class="nav nav-pills nav-sidebar flex-column text-sm nav-legacy nav-flat" data-widget="treeview" role="menu" data-accordion="false" id="MenuVContainer">
           </ul>
         </nav>
       </div>
@@ -105,7 +90,7 @@
                 </div>
                 
                 <div class="overlay">
-                  <i class="fas fa-2x fa-sync-alt"></i>
+                  <i class="fas fa-spin fa-2x fa-sync-alt"></i>
                 </div>
               </div>
             </div>
@@ -129,7 +114,7 @@
                 </div>
                 
                 <div class="overlay d-none">
-                  <i class="fas fa-2x fa-sync-alt"></i>
+                  <i class="fas fa-spin fa-2x fa-sync-alt"></i>
                 </div>
               </div>
             </div> -->
@@ -145,7 +130,7 @@
                 </div>
                 <div class="card-body">
                   <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-9">
                       <div class="form-group" style="margin-bottom: 0;">
                         <label>Período de Análise</label>
                         <div class="input-group">
@@ -158,30 +143,18 @@
                     </div>
                     <div class="col-md-3">
                       <div class="form-group" style="margin-bottom: 0;">
-                        <label>KM/H (>=)</label>
-                        <div class="input-group">
-                          <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fa fa-car-side"></i></span>
-                          </div>
-                          <input type="number" class="form-control float-right" id="kmhFilter">
-                        </div>
-                      </div>  
-                    </div>
-                    <div class="col-md-3">
-                      <div class="form-group" style="margin-bottom: 0;">
-                        <label>RPM (>=)</label>
-                        <div class="input-group">
-                          <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fa fa-cog"></i></span>
-                          </div>
-                          <input type="number" class="form-control float-right" id="rpmFilter">
-                        </div>
+                        <label>Estado</label>
+                        <select class="custom-select" id="CarState">
+                          <option value="All">Ambos</option>
+                          <option value="Moving">Andando</option>
+                          <option value="Stop">Parado</option>
+                        </select>
                       </div>  
                     </div>
                   </div>
                 </div>
                 <div class="overlay d-none">
-                  <i class="fas fa-2x fa-sync-alt"></i>
+                  <i class="fas fa-spin fa-2x fa-sync-alt"></i>
                 </div>
               </div>
             </div>
@@ -234,7 +207,7 @@
                   </div>
                 </div>
                 <div class="overlay d-none">
-                  <i class="fas fa-2x fa-sync-alt"></i>
+                  <i class="fas fa-spin fa-2x fa-sync-alt"></i>
                 </div>
               </div>
             </div>
@@ -254,7 +227,7 @@
                 </div>
                 
                 <div class="overlay d-none">
-                  <i class="fas fa-2x fa-sync-alt"></i>
+                  <i class="fas fa-spin fa-2x fa-sync-alt"></i>
                 </div>
               </div>
             </div>
@@ -291,6 +264,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js" type="text/javascript"></script>
   <script src="plugins/daterangepicker/daterangepicker.js"></script>
   <script src="dist/js/adminlte.min.js"></script>
+  <script src="src/site.js"></script>
   <script src="src/api.js"></script>
   <script src="src/index.js"></script>
 
