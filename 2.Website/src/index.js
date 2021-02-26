@@ -25,6 +25,10 @@ $(document).ready(function () {
         e.preventDefault();
         let id = $(this).data("id");
         selectedCar = id;
+        $("#carsContainer .badge").each(function(i,badge){
+            badge.remove();
+        });
+        $(this).append(`<span class="badge bg-warning">Selecionado</span>`);
         client.selectCar(id,startDate,endDate,carState);
     });
     $(document).on("change","#CarState",function(e){
@@ -86,12 +90,11 @@ let client = {
         $("#carsCard .overlay").removeClass("d-none");
 
         let cars = Cars.getAll();
-
+        let html = "";
         $(cars).each(function (i, item) {
-            let html = $("#carsContainer").html();
             html += `<a class="btn btn-app" name="btnCar" data-id="${item.carVIN}"><i class="fas fa-car"></i>${item.name == undefined ? item.carVIN : item.name}</a>`;
-            $("#carsContainer").html(html);
         });
+        $("#carsContainer").html(html);
 
         $("#carsCard .overlay").addClass("d-none");
 
@@ -142,6 +145,13 @@ let client = {
         carChart = lineChart.setup("carChartContainer", "Resumo");
     },
     selectCar: function (id, startDate = null, endDate = null, carState = null) {
+        if(id == -1){
+            Toast.fire({
+                icon: 'warning',
+                title: 'Selecione um Carro!'
+            });
+            return;
+        }
         this.setupChart();
         let dataRPM = Cars.getSensorByPID(id, "0C",startDate,endDate,carState);
         let dataKmh = Cars.getSensorByPID(id, "0D",startDate,endDate,carState);
@@ -162,7 +172,7 @@ let client = {
 
         $("#TopKmh").html(`${maxKMH} Km/h`)
         $("#TopRpm").html(`${maxRPM} RPM`);
-        $("#countRecords").html(`Quantidade de Registros (RPM: ${dataRPM.length} | KMH: ${dataKmh.length})`);
+        $("#countRecords").html(`Registros: ${dataRPM.length}`);
     }
 };
 let gaugeChart = {
