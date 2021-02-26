@@ -72,16 +72,6 @@ const Cars = {
 		});
 		return result.responseJSON;
     },
-    getSensorByPID: function(id,pid,startDate=null,endDate=null,value=null){
-        var result = $.ajax({
-			url: `${endpoint}/car/${id}/sensor/${pid}`,
-			data: { startDate: startDate, endDate: endDate, value: value },
-			type: "GET",
-			async: false,
-			headers: { "ACCEPT": "application/json;odata=verbose" },
-		});
-		return result.responseJSON;
-	},
     getSensorByPID: function(id,pid,startDate=null,endDate=null,state=null){
         var result = $.ajax({
 			url: `${endpoint}/car/${id}/sensor/${pid}`,
@@ -104,10 +94,11 @@ const Cars = {
 	}
 };
 let Logs = {
-	getAll: function(){
+	getAll: function(filter=null){
         var result = $.ajax({
 			url: `${endpoint}/logs`,
 			type: "GET",
+			data: filter,
 			async: false,
 			headers: { "ACCEPT": "application/json;odata=verbose" },
 		});

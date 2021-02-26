@@ -1,15 +1,30 @@
 $(document).ready(function () {
 
-    client.getAllLogs();
+    client.init();
+
     $(document).on("click","#btnRefresh",function(e){
         client.getAllLogs();
     });
+    $(document).on("change","#slLogResources",function(e){
+        e.preventDefault();
+        let selected = $("#slLogResources option:selected").val();
+        if(selected == "All") client.getAllLogs();
+        else client.getAllLogs({ resource: selected});
+    });
 });
 let client = {
-    getAllLogs: function () {
+    init: function(){
+        $("#slLogResources").append(new Option("Todos","All"));
+        let r = resources.map(x => x.id);
+        $(r).each(function(i,resource){
+            $("#slLogResources").append(new Option(resource,resource));
+        });
+        client.getAllLogs();
+    },
+    getAllLogs: function (filter=null) {
 
         $("#logCard .overlay").removeClass("d-none");
-        let logs = Logs.getAll();
+        let logs = Logs.getAll(filter);
 
         let html = `<div class="direct-chat-messages">`;
         $(logs).each(function (i, item) {
