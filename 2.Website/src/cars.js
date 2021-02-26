@@ -66,5 +66,9 @@ let client = {
         let carName = $("#txtDeviceName").val();   
         device[0].cars[carIndex].name = carName;
         Cars.update(id,device[0]);
+        Toast.fire({
+            icon: 'success',
+            title: 'Carro Atualizado!'
+        })
     }
 };
