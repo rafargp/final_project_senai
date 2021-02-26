@@ -6,7 +6,11 @@ const menu = [
     { id: "mnvCar", title: "Carros", url: "cars.html", css: "fa-car", type: "V" },
     { id: "mnvLogs", title: "Logs", url: "logs.html", css:"fa-scroll", type: "V" },
 ];
-
+const resources = [
+    { id: "Car", image: "/dist/img/resources/car.webp" },
+    { id: "Device", image: "/dist/img/resources/device.png" },
+    { id: "Sensor", image: "/dist/img/resources/sensor.png" }
+]
 
 $(document).ready(function(){
     LTE.init();
@@ -59,5 +63,10 @@ const LTE = {
         print += `</ul>`;
         print += `</li>`;
         container.append(print);
+    },
+    getResourceImage: function(id){
+        let resource = resources.find(x => x.id == id);
+        if(resource == undefined) return "";
+        return resource.image;
     }
 };
