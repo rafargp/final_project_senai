@@ -14,7 +14,7 @@
     "update_method": "GET",
     "health_interval": "25000",
     "sensor_interval": "1000",
-    "gsm_apn": "claro.com.br",
+    "gsm_apn": "java.claro.com.br",
     "gsm_user": "claro",
     "gsm_pass": "claro",
     "mqtt_topics": [

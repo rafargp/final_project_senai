@@ -3,7 +3,9 @@ $(document).ready(function () {
     client.init();
 
     $(document).on("click","#btnRefresh",function(e){
-        client.getAllLogs();
+        let selected = $("#slLogResources option:selected").val();
+        if(selected == "All") client.getAllLogs();
+        else client.getAllLogs({ resource: selected});
     });
     $(document).on("change","#slLogResources",function(e){
         e.preventDefault();
