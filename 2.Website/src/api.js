@@ -93,11 +93,12 @@ const Cars = {
 		});	
 		return result.responseJSON;
     },
-    getTravels: function(id){
+    getTravels: function(id,startDate=null,endDate=null){
         var result = $.ajax({
 			url: `${endpoint}/car/${id}/travels`,
 			type: "GET",
 			async: false,
+			data: { startDate: startDate, endDate: endDate },
 			headers: { "ACCEPT": "application/json;odata=verbose" },
 		});
 		return result.responseJSON;
@@ -113,7 +114,7 @@ const Cars = {
 		return result.responseJSON;
 	},
 	getSensors: function(id,pid,startDate=null,endDate=null,state=null){
-		let travels = this.getTravels(id);
+		let travels = this.getTravels(id,startDate,endDate).sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
 		let full = [];
         $(travels).each(function(i,travel){
 			let result = Travels.getSensors(travel.id,pid,startDate,endDate,state);

@@ -2,8 +2,8 @@ let rpmChart = null;
 let kmhChart = null;
 let carChart = null;
 let mqtt;
-let startDate = moment().startOf('day').subtract(3,'hours').toISOString();
-let endDate = moment().subtract(3,'hours').toISOString();
+let startDate = moment().startOf('day').subtract(3, 'hours').toISOString();
+let endDate = moment().subtract(3, 'hours').toISOString();
 let selectedCar = -1;
 let selectedTravel = -1;
 let carState = "All";
@@ -26,32 +26,32 @@ $(document).ready(function () {
         e.preventDefault();
         let id = $(this).data("id");
         selectedCar = id;
-        $("#carsContainer .badge").each(function(i,badge){
+        $("#carsContainer .badge").each(function (i, badge) {
             badge.remove();
         });
         $(this).append(`<span class="badge bg-warning">Selecionado</span>`);
-        client.selectCar(id,startDate,endDate,carState);
+        client.selectCar(id, startDate, endDate, carState);
     });
     $(document).on("click", "[name=btnTravel]", function (e) {
         e.preventDefault();
         let id = $(this).data("id");
         selectedTravel = id;
-        $("#travelsContainer .badge").each(function(i,badge){
+        $("#travelsContainer .badge").each(function (i, badge) {
             badge.remove();
         });
         $(this).append(`<span class="badge bg-warning">Selecionado</span>`);
-        client.selectTravel(id,startDate,endDate,carState);
+        client.selectTravel(id, startDate, endDate, carState);
     });
-    $(document).on("change","#CarState",function(e){
+    $(document).on("change", "#CarState", function (e) {
         e.preventDefault();
         carState = $("#CarState option:selected").val();
-        client.selectTravel(selectedTravel,startDate,endDate,carState);
+        client.selectTravel(selectedTravel, startDate, endDate, carState);
     });
 
-    $(document).on("click","#btnTacometer",function(e){
+    $(document).on("click", "#btnTacometer", function (e) {
         let visible = $(this).data("tacometer");
-        if(visible == 1) {
-            $(this).data("tacometer",0);
+        if (visible == 1) {
+            $(this).data("tacometer", 0);
             $("#rpmChartContainer").parent().removeClass("col-sm-3");
             $("#rpmChartContainer").parent().hide()
             $("#kmhChartContainer").parent().removeClass("col-sm-3");
@@ -59,8 +59,8 @@ $(document).ready(function () {
             $("#carChartContainer").parent().removeClass("col-sm-6");
             $("#carChartContainer").parent().addClass("col-sm-12");
             $(this).html(`<i class="fas fa-compress-arrows-alt"></i>`);
-        }else{
-            $(this).data("tacometer",1);
+        } else {
+            $(this).data("tacometer", 1);
             $("#rpmChartContainer").parent().addClass("col-sm-3");
             $("#rpmChartContainer").parent().show()
             $("#kmhChartContainer").parent().addClass("col-sm-3");
@@ -69,7 +69,7 @@ $(document).ready(function () {
             $("#carChartContainer").parent().addClass("col-sm-6");
             $(this).html(`<i class="fas fa-expand-arrows-alt"></i>`);
         }
-        client.selectTravel(selectedTravel,startDate,endDate,carState);
+        client.selectTravel(selectedTravel, startDate, endDate, carState);
     });
     $('#reservationtime').daterangepicker(
         {
@@ -87,14 +87,15 @@ $(document).ready(function () {
             },
         },
         function (start, end) {
-            startDate = start.subtract(3,'hours').toISOString();
-            endDate = end.subtract(3,'hours').toISOString();
-            client.selectTravel(selectedTravel,startDate,endDate,carState);
+            startDate = start.subtract(3, 'hours').toISOString();
+            endDate = end.subtract(3, 'hours').toISOString();
+            client.setupTravels(selectedCar);
+            client.selectTravel(selectedTravel, startDate, endDate, carState);
         }
     );
 
     client.setup();
-    
+
 });
 let client = {
     setup: function () {
@@ -108,7 +109,7 @@ let client = {
         });
         $("#carsContainer").html(html);
 
-        html = `<a class="btn btn-app" name="btnTravel" data-id="ALL"><i class="fas fa-road"></i>Todas</a>`;
+        html = `<a class="btn btn-app" name="btnTravel" data-id="All"><i class="fas fa-road"></i>Todas</a>`;
         $("#travelsContainer").html(html);
 
         $("#carsCard .overlay").addClass("d-none");
@@ -144,12 +145,12 @@ let client = {
     },
     onMessageArrivedMQTT: function (message) {
         let data = JSON.parse(message._getPayloadString());
-        let dataRPM = data.sensors.find(x => x.pid=="0C").value;
-        let dataKmh = data.sensors.find(x => x.pid=="0D").value;
+        let dataRPM = data.sensors.find(x => x.pid == "0C").value;
+        let dataKmh = data.sensors.find(x => x.pid == "0D").value;
 
         gaugeChart.setPoint(rpmChart, dataRPM);
         gaugeChart.setPoint(kmhChart, dataKmh);
-        
+
         return msg;
     },
     setupChart: function () {
@@ -161,7 +162,7 @@ let client = {
         carChart = lineChart.setup("carChartContainer", "Resumo");
     },
     selectCar: function (id) {
-        if(id == -1){
+        if (id == -1) {
             Toast.fire({
                 icon: 'warning',
                 title: 'Selecione um Carro!'
@@ -169,43 +170,54 @@ let client = {
             return;
         }
 
+       client.setupTravels(id);
+       if(selectedTravel != -1) client.selectTravel(selectedTravel, startDate, endDate, carState);
+    },
+    setupTravels: function(carId){
         $("#travelsCard .overlay").removeClass("d-none");
 
-        let travels = Cars.getTravels(id);
-        let html = `<a class="btn btn-app" name="btnTravel" data-id="All"><i class="fas fa-road"></i>Todas</a>`;
+        let travels = Cars.getTravels(carId, startDate, endDate);
+        
+        let html = `<a class="btn btn-app" name="btnTravel" data-id="All"><i class="fas fa-road"></i>Todas${selectedTravel == "All"?"<span class='badge bg-warning'>Selecionado</span>":""}</a>`;
+        let selected = false
         $(travels).each(function (i, item) {
-            html += `<a class="btn btn-app" name="btnTravel" data-id="${item.id}"><i class="fas fa-road"></i>${new Date(item.timestamp).toISOString()}</a>`;
+            if(item.id == selectedTravel) selected = true;
+            let ts = new Date(item.timestamp);
+            ts.setHours(ts.getHours() + 3);
+            let title = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()}`;
+            html += `<a class="btn btn-app" name="btnTravel" data-id="${item.id}"><i class="fas fa-road"></i>${title}${item.id == selectedTravel?"<span class='badge bg-warning'>Selecionado</span>":""}</a>`;
         });
+        if(selectedTravel != "All" && !selected) selectedTravel = -1;
         $("#travelsContainer").html(html);
-
+        
         $("#travelsCard .overlay").addClass("d-none");
     },
     selectTravel: function (id, startDate = null, endDate = null, carState = null) {
-        if(id == -1){
+        if (id == -1) {
             Toast.fire({
                 icon: 'warning',
                 title: 'Selecione uma Viagem!'
             });
             return;
-        } else if (selectedCar == -1){
+        } else if (selectedCar == -1) {
             Toast.fire({
                 icon: 'warning',
                 title: 'Selecione um Carro!'
             });
             return;
         }
-        
+
         this.setupChart();
 
         let dataRPM;
         let dataKmh;
 
-        if(id == "All"){
-            dataRPM = Cars.getSensors(selectedCar, "0C",startDate,endDate,carState);
-            dataKmh = Cars.getSensors(selectedCar, "0D",startDate,endDate,carState);    
-        }else{
-            dataRPM = Travels.getSensors(id, "0C",startDate,endDate,carState);
-            dataKmh = Travels.getSensors(id, "0D",startDate,endDate,carState);    
+        if (id == "All") {
+            dataRPM = Cars.getSensors(selectedCar, "0C", startDate, endDate, carState);
+            dataKmh = Cars.getSensors(selectedCar, "0D", startDate, endDate, carState);
+        } else {
+            dataRPM = Travels.getSensors(id, "0C", startDate, endDate, carState);
+            dataKmh = Travels.getSensors(id, "0D", startDate, endDate, carState);
         }
 
         dataRPM = dataRPM.map(x => [Date.parse(x.receive_date), x.value]);
@@ -218,9 +230,9 @@ let client = {
         gaugeChart.setPoint(kmhChart, dataKmh[dataKmh.length - 1]);
 
         let maxRPM = 0;
-        if(dataRPM.length > 0) maxRPM = Math.max.apply(Math, dataRPM.map(function(o) { return o[1]; }))
+        if (dataRPM.length > 0) maxRPM = Math.max.apply(Math, dataRPM.map(function (o) { return o[1]; }))
         let maxKMH = 0;
-        if(dataKmh.length > 0) maxKMH = Math.max.apply(Math, dataKmh.map(function(o) { return o[1]; }))
+        if (dataKmh.length > 0) maxKMH = Math.max.apply(Math, dataKmh.map(function (o) { return o[1]; }))
 
         $("#TopKmh").html(`${maxKMH} Km/h`)
         $("#TopRpm").html(`${maxRPM} RPM`);
