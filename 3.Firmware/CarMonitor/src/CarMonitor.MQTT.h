@@ -13,13 +13,12 @@ char *mqtt_login_device;
 char *mqtt_login_car;
 char *mqtt_command;
 char *mqtt_health;
-
 unsigned long loginPreviousMillis = 0;
 
 PubSubClient client(gsm_client);
 
 void sendSensorData(){
-    if (CAR_ID == "") return;
+    if (TRAVEL_ID == "") return;
 
     log_d("send sensor data");
        
@@ -30,30 +29,18 @@ void sendSensorData(){
     
     if(rpm == 0 && kmh == 0) return;
 
-    const char* car_status = (kmh == 0 ? "Stop":"Moving");
-
     log_d("creating json payload");
-    StaticJsonDocument<512> json;
-    
-    json["car_id"] = CAR_ID;
-    json["device_id"] = DEVICE_ID;
+    StaticJsonDocument<256> json;
     json["travel_id"] = TRAVEL_ID;
-    json["car_status"] = car_status;
     JsonArray sensors = json.createNestedArray("sensors");
     JsonObject sensors_0 = sensors.createNestedObject();
     sensors_0["pid"] = "0C";
-    sensors_0["sensor"] = "Engine Speed";
-    sensors_0["unit"] = "RPM";
     sensors_0["value"] = rpm;
     JsonObject sensors_1 = sensors.createNestedObject();
     sensors_1["pid"] = "0D";
-    sensors_1["sensor"] = "Vehicle Speed";
-    sensors_1["unit"] = "Km/h";
     sensors_1["value"] = kmh;
     JsonObject sensors_2 = sensors.createNestedObject();
     sensors_2["pid"] = "46";
-    sensors_2["sensor"] = "Ambient Air Temperature";
-    sensors_2["unit"] = "Celsius";
     sensors_2["value"] = getAirTemp();
 
     String payload = "";
@@ -131,7 +118,7 @@ void registerDevice()
 void registerCar()
 {
     if (DEVICE_ID == "") return;
-    if (CAR_ID != "") return;
+    if (TRAVEL_ID != "") return;
 
     unsigned long currentMillis = millis();
     if (currentMillis - loginPreviousMillis < 10000) return;
@@ -175,7 +162,6 @@ void loginDevice(byte *payload)
     if (!deserializeJson(device, payload))
     {
         DEVICE_ID = device["id"].as<String>();
-        TRAVEL_ID = device["travel_id"].as<String>();
         printOledTextSingleLine("Dispositivo Registrado\nID:" + DEVICE_ID);
         log_d("unsubscribing login topic");
         boolean result = client.unsubscribe(mqtt_login_device);
@@ -196,8 +182,8 @@ void loginCar(byte *payload)
     DynamicJsonDocument device(128);
     if (!deserializeJson(device, payload))
     {
-        CAR_ID = device["id"].as<String>();
-        printOledTextSingleLine("Carro Registrado\nID:" + CAR_ID);
+        TRAVEL_ID = device["travel_id"].as<String>();
+        printOledTextSingleLine("Carro Registrado\nTravel:" + TRAVEL_ID);
         log_d("unsubscribing login topic");
         boolean result = client.unsubscribe(mqtt_login_car);
         log_d("unsubscribe login topic: %d", result);
@@ -298,6 +284,6 @@ void connectMQTT()
         }
     }
     if(DEVICE_ID == "") registerDevice();
-    if(CAR_ID == "") registerCar();
+    if(TRAVEL_ID == "") registerCar();
     client.loop();
 }

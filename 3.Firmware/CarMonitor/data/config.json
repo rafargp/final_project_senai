@@ -12,7 +12,7 @@
     "update_port": "1880",
     "update_path": "/update",
     "update_method": "GET",
-    "health_interval": "25000",
+    "health_interval": "300000",
     "sensor_interval": "1000",
     "gsm_apn": "java.claro.com.br",
     "gsm_user": "claro",

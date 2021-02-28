@@ -28,6 +28,36 @@ const Devices = {
 		return result.responseJSON;
     }
 };
+const Travels = {
+	getAll: function(){
+        var result = $.ajax({
+			url: `${endpoint}/travels`,
+			type: "GET",
+			async: false,
+			headers: { "ACCEPT": "application/json;odata=verbose" },
+		});
+		return result.responseJSON;
+	},
+	getById: function(id){
+        var result = $.ajax({
+			url: `${endpoint}/travel/${id}`,
+			type: "GET",
+			async: false,
+			headers: { "ACCEPT": "application/json;odata=verbose" },
+		});
+		return result.responseJSON;
+	},
+	getSensors: function(id,pid,startDate=null,endDate=null,state=null){
+        var result = $.ajax({
+			url: `${endpoint}/travel/${id}/sensors`,
+			data: { pid:pid, startDate: startDate, endDate: endDate, state: state },
+			type: "GET",
+			async: false,
+			headers: { "ACCEPT": "application/json;odata=verbose" },
+		});
+		return result.responseJSON;
+	}
+};
 const Cars = {
     getAll: function(){
         let devices = Devices.getAll();
@@ -60,28 +90,18 @@ const Cars = {
 			type: "GET",
 			async: false,
 			headers: { "ACCEPT": "application/json;odata=verbose" },
-		});
+		});	
 		return result.responseJSON;
     },
-    getSensors: function(id){
+    getTravels: function(id){
         var result = $.ajax({
-			url: `${endpoint}/car/${id}/sensors`,
+			url: `${endpoint}/car/${id}/travels`,
 			type: "GET",
 			async: false,
 			headers: { "ACCEPT": "application/json;odata=verbose" },
 		});
 		return result.responseJSON;
     },
-    getSensorByPID: function(id,pid,startDate=null,endDate=null,state=null){
-        var result = $.ajax({
-			url: `${endpoint}/car/${id}/sensor/${pid}`,
-			data: { startDate: startDate, endDate: endDate, state: state },
-			type: "GET",
-			async: false,
-			headers: { "ACCEPT": "application/json;odata=verbose" },
-		});
-		return result.responseJSON;
-	},
 	update: function(id,data){
 		var result = $.ajax({
 			url: `${endpoint}/car/${id}`,
@@ -91,6 +111,15 @@ const Cars = {
 			headers: { "ACCEPT": "application/json;odata=verbose" },
 		});
 		return result.responseJSON;
+	},
+	getSensors: function(id,pid,startDate=null,endDate=null,state=null){
+		let travels = this.getTravels(id);
+		let full = [];
+        $(travels).each(function(i,travel){
+			let result = Travels.getSensors(travel.id,pid,startDate,endDate,state);
+			full = full.concat(result);
+		});
+		return full;
 	}
 };
 let Logs = {

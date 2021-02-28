@@ -9,7 +9,8 @@ const menu = [
 const resources = [
     { id: "Car", image: "/dist/img/resources/car.webp" },
     { id: "Device", image: "/dist/img/resources/device.png" },
-    { id: "Sensor", image: "/dist/img/resources/sensor.png" }
+    { id: "Sensor", image: "/dist/img/resources/sensor.png" },
+    { id: "Travel", image: "/dist/img/resources/travel.png" }
 ]
 
 const Toast = Swal.mixin({

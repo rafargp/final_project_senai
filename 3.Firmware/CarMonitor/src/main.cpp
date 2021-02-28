@@ -16,7 +16,6 @@ int hour = 0, minute = 0, sec = 0;
 bool check_update;
 
 String DEVICE_ID;
-String CAR_ID;
 String TRAVEL_ID;
 
 //Personal Library
