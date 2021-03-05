@@ -28,7 +28,7 @@ let client = {
         $("#logCard .overlay").removeClass("d-none");
         let logs = Logs.getAll(filter);
 
-        let html = `<div class="direct-chat-messages">`;
+        let html = `<div class="direct-chat-messages" style="height: 100%;">`;
         $(logs).each(function (i, item) {
             html += `<div class="direct-chat-msg">`;
             html += `   <div class="direct-chat-infos clearfix">`;

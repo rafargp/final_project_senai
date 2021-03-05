@@ -77,8 +77,8 @@
       <section class="content">
         <div class="container-fluid">
           <div class="row">
-            <div class="col-md-10">
-              <div class="card card-info direct-chat direct-chat-primary" id="logCard">
+            <div class="col-md-12">
+              <div class="card card-info direct-chat direct-chat-primary" id="logCard" style="max-height: 570px;height: 570px;">
                 <div class="card-header">
                   <div class="card-tools">
                     <button type="button" class="btn btn-tool" id="btnRefresh">
@@ -88,28 +88,18 @@
                   <h3 class="card-title">Meus Logs</h3>         
                 </div>
                 
-                <div class="card-body" id="logsContainer">
+                <div class="card-body" id="logsContainer" >
                     
+                </div>
+                <div class="card-footer">
+                  <form action="#" method="post">
+                    <div class="input-group">
+                      <select class="custom-select" id="slLogResources">
+                    </div>
+                  </form>
                 </div>
                 <div class="overlay">
                   <i class="fas fa-spin fa-2x fa-sync-alt"></i>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-2">
-              <div class="card card-info" id="filterCard">
-                <div class="card-header">
-                  <h3 class="card-title">Filtros</h3>         
-                </div>
-                
-                <div class="card-body" id="filterContainer">
-                  <div class="row">
-                    <div class="form-group" style="margin-bottom: 0;">
-                      <label>Resources</label>
-                      <select class="custom-select" id="slLogResources">
-                      </select>
-                    </div>  
-                  </div>
                 </div>
               </div>
             </div>
