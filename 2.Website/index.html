@@ -110,24 +110,30 @@
                 </div>
                 <div class="card-body">
                   <div class="row">
-                    <div class="col-md-10">
+                    <div class="col-md-9">
                       <div class="form-group" style="margin-bottom: 0;">
                         <label>Período de Análise</label>
                         <div class="input-group">
                           <div class="input-group-prepend">
-                            <span class="input-group-text" id="startAddTime"><i class="far fa-clock"></i> + 30</span>
+                            <span class="input-group-text" id="startAddTime"><i class="fas fa-plus"></i></span>
                           </div>
                           <div class="input-group-prepend">
-                            <span class="input-group-text" id="startDelTime"><i class="far fa-clock"></i> - 30</span>
+                            <span class="input-group-text" id="startDelTime"><i class="fas fa-minus"></i></span>
                           </div>
                           <input type="text" class="form-control float-right" id="reservationtime">
                           <span class="input-group-append">
-                            <span class="input-group-text" id="endAddTime"><i class="far fa-clock"></i> + 30</span>
+                            <span class="input-group-text" id="endAddTime"><i class="fas fa-plus"></i></span>
                           </span>
                           <span class="input-group-append">
-                            <span class="input-group-text" id="endDelTime"><i class="far fa-clock"></i> - 30</span>
+                            <span class="input-group-text" id="endDelTime"><i class="fas fa-minus"></i></span>
                           </span>
                         </div>
+                      </div>
+                    </div>
+                    <div class="col-md-1">
+                      <div class="form-group" style="margin-bottom: 0;">
+                        <label>Inc/Dec</label>
+                        <input type="text" class="form-control float-right" id="timeIncrement" value="30">
                       </div>
                     </div>
                     <div class="col-md-2">
@@ -154,6 +160,7 @@
                 <div class="card-header">
                   <h3 class="card-title">Viagens</h3>
                   <div class="card-tools">
+                    <span class="sm-text" id="countTravels"></span>
                     <button type="button" class="btn btn-tool" name="btnRefreshData">
                       <i class="fas fa-sync-alt"></i>
                     </button>

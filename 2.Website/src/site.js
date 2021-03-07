@@ -1,10 +1,13 @@
 const menu = [
     { id: "mnhHome", title: "Home", url: "index.html", type: "H" },
     { id: "mnhCar", title: "Carros", url: "cars.html", type: "H" },
+    { id: "mnhHealth", title: "Health", url: "health.html", type: "H" },
     { id: "mnhLogs", title: "Logs", url: "logs.html", type: "H" },
     { id: "mnvHome", title: "Home", url: "index.html", css: "fa-home" ,type: "V" },
     { id: "mnvCar", title: "Carros", url: "cars.html", css: "fa-car", type: "V" },
-    { id: "mnvLogs", title: "Logs", url: "logs.html", css:"fa-scroll", type: "V" },
+    { id: "mnvHealth", title: "Health", url: "health.html", css:"fa-heart",  type: "V" },
+    { id: "mnvLogs", title: "Logs", url: "logs.html", css:"fa-scroll", type: "V" }
+    ,
 ];
 const resources = [
     { id: "Car", image: "/dist/img/resources/car.webp" },

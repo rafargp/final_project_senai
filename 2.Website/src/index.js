@@ -37,13 +37,36 @@ $(document).ready(function () {
         client.selectCar(selectedCar, startDate, endDate, carState);
     });
     $(document).on("click","#startAddTime",function(e){
-        
+        let increment = $("#timeIncrement").val();
+        let nDateTime = moment.utc(startDate).add(increment,'minutes');
+        startDate = nDateTime.toISOString()
+        $("#reservationtime").data('daterangepicker').setStartDate(nDateTime);
+        client.setupTravels(selectedCar);
+        client.selectTravel(selectedTravel, startDate, endDate, carState);
     });
     $(document).on("click","#startDelTime",function(e){
+        let increment = $("#timeIncrement").val();
+        let nDateTime = moment.utc(startDate).subtract(increment,'minutes');
+        startDate = nDateTime.toISOString()
+        $("#reservationtime").data('daterangepicker').setStartDate(nDateTime);
+        client.setupTravels(selectedCar);
+        client.selectTravel(selectedTravel, startDate, endDate, carState);
     });
     $(document).on("click","#endAddTime",function(e){
+        let increment = $("#timeIncrement").val();
+        let nDateTime = moment.utc(endDate).add(increment,'minutes');
+        endDate = nDateTime.toISOString()
+        $("#reservationtime").data('daterangepicker').setEndDate(nDateTime);
+        client.setupTravels(selectedCar);
+        client.selectTravel(selectedTravel, startDate, endDate, carState);
     });
     $(document).on("click","#endDelTime",function(e){
+        let increment = $("#timeIncrement").val();
+        let nDateTime = moment.utc(endDate).subtract(increment,'minutes');
+        endDate = nDateTime.toISOString()
+        $("#reservationtime").data('daterangepicker').setEndDate(nDateTime);
+        client.setupTravels(selectedCar);
+        client.selectTravel(selectedTravel, startDate, endDate, carState);
     });
 
     $('#reservationtime').daterangepicker(
@@ -88,13 +111,13 @@ let client = {
         html += `<table class="table table-striped table-valign-middle">`;
         html += `<thead>`;
         html += `<tr>`;
-        html += `<th>#</th>`;
+        html += `<th><i class="fa fa-route"></i> Viagem</th>`;
         html += `<th class="text-center">Exibir</th>`;
         html += `</tr>`;
         html += `</thead>`;
         html += `<tbody>`;
         html += `<tr data-id="All" name="btnTravel">`;
-        html += `<td>Todos</td>`;
+        html += `<td><i class="fa fa-route"></i> Todos</td>`;
         html += `<td class="text-center"><a href="#" class="text-muted"><i class="fas fa-search"></i></a></td>`;
         html += `</tr>`;
         html += `</tbody>`;
@@ -171,13 +194,13 @@ let client = {
         html += `<table class="table table-striped table-valign-middle table-head-fixed">`;
         html += `<thead>`;
         html += `<tr>`;
-        html += `<th>#</th>`;
+        html += `<th><i class="fa fa-route"></i> Viagem</th>`;
         html += `<th class="text-center">Exibir</th>`;
         html += `</tr>`;
         html += `</thead>`;
         html += `<tbody>`;
         html += `<tr data-id="All" name="btnTravel">`;
-        html += `<td>Todos</td>`;
+        html += `<td><i class="fa fa-route"></i> Todos</td>`;
         html += `<td class="text-center"><a href="#" class="text-muted"><i class="fas fa-search"></i></a></td>`;
         html += `</tr>`;
         let selected = false
@@ -187,7 +210,7 @@ let client = {
             ts.setHours(ts.getHours() + 3);
             let title = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()}`;
             html += `<tr data-id="${item.id}" name="btnTravel">`;
-            html += `<td class="${item.id == selectedTravel?"font-weight-bold":""}">${title}</td>`;
+            html += `<td class="${item.id == selectedTravel?"font-weight-bold":""}"><i class="fa fa-route"></i> ${title}</td>`;
             html += `<td class="text-center"><a href="#" class="text-muted"><i class="fas fa-search"></i></a></td>`;
             html += `</tr>`;
         });
@@ -195,7 +218,7 @@ let client = {
         html += `</tbody>`;
         html += `</table>`;
         $("#travelsContainer").html(html);
-              
+        $("#countTravels").html(`Registros: ${travels.length}`);
         $("#travelsCard .overlay").addClass("d-none");
     },
     selectTravel: function (id, startDate = null, endDate = null, carState = null) {
@@ -310,12 +333,14 @@ let lineChart = {
                 },
                 title: {
                     text: 'Motor',
-                    style: { color: Highcharts.getOptions().colors[1] }
+                    style: { color: Highcharts.getOptions().colors[1] },
+                    enabled: false
                 }
             }, {
                 title: {
                     text: 'Velocity',
-                    style: { color: Highcharts.getOptions().colors[0] }
+                    style: { color: Highcharts.getOptions().colors[0] },
+                    enabled: false
                 },
                 labels: {
                     format: '{value} Km/h',
