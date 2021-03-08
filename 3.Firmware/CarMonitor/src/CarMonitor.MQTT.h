@@ -17,7 +17,7 @@ unsigned long loginPreviousMillis = 0;
 
 PubSubClient client(gsm_client);
 
-void sendSensorData(){
+void getSensorData(){
     if (TRAVEL_ID == "") return;
 
     log_d("send sensor data");
@@ -39,21 +39,18 @@ void sendSensorData(){
     JsonObject sensors_1 = sensors.createNestedObject();
     sensors_1["pid"] = "0D";
     sensors_1["value"] = kmh;
-    JsonObject sensors_2 = sensors.createNestedObject();
-    sensors_2["pid"] = "46";
-    sensors_2["value"] = getAirTemp();
+    // JsonObject sensors_2 = sensors.createNestedObject();
+    // sensors_2["pid"] = "46";
+    // sensors_2["value"] = getAirTemp();
 
     String payload = "";
     serializeJson(json, payload);
 
-    const char *c_payload = payload.c_str();
-    log_d("payload: %s", c_payload);
-    int p_length = strlen(c_payload);
-    log_d("publishing payload to topic: %s", mqtt_sensors);
-    boolean result = client.publish(mqtt_sensors, c_payload, p_length);
-    if (result) log_i("sensor payload sent");
-    else log_e("failed to publish sent payload");
-    delay(10);
+    lastAdded++;
+    if (lastAdded >= queueSize) lastAdded = 0;
+    if (MQTT_QUEUE[lastAdded] != "") dataLoss++;
+    else MQTT_QUEUE[lastAdded] = payload;
+    log_e("Loss: %i",dataLoss);
 }
 void sendHealthStatus(){
     if (DEVICE_ID == "") return;
@@ -121,7 +118,7 @@ void registerCar()
     if (TRAVEL_ID != "") return;
 
     unsigned long currentMillis = millis();
-    if (currentMillis - loginPreviousMillis < 10000) return;
+    if (currentMillis - loginPreviousMillis < 20000) return;
     loginPreviousMillis = currentMillis;
 
     log_d("register car");
@@ -245,7 +242,7 @@ void connectMQTT()
         connect_gprs();
 
         log_d("Connecting to MQTT server");
-               
+        printOledTextSingleLine("Conectando MQTT...");
         if (client.connect(DEVICE_ID.c_str(), mqtt_user, mqtt_pass))
         {
             printOledTextSingleLine("MQTT Conectado");
@@ -286,4 +283,29 @@ void connectMQTT()
     if(DEVICE_ID == "") registerDevice();
     if(TRAVEL_ID == "") registerCar();
     client.loop();
+}
+void sendSensorData(void * pvParameters){
+    log_i("Start Send Sensor Data");
+    
+    while (true)
+    {
+        for (int x = lastSent; x < queueSize; x++)
+        {
+            if (lastSent == (queueSize - 1)) lastSent = 0;
+            if (MQTT_QUEUE[x] == "") continue;
+            const char *c_payload = MQTT_QUEUE[x].c_str();
+            log_d("payload: %s", c_payload);
+            int p_length = strlen(c_payload);
+            log_d("publishing payload to topic: %s", mqtt_sensors);
+            boolean result = false;
+            while(!result){    
+                result = client.publish(mqtt_sensors, c_payload, p_length);
+                if (result) log_i("sensor payload sent");
+                else log_e("failed to publish sent payload");
+            }
+            MQTT_QUEUE[x] = "";
+            lastSent = x;
+        }
+    }
+    vTaskDelay(10);
 }

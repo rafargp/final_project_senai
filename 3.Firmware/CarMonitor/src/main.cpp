@@ -5,6 +5,8 @@
 
 //Variables
 const float FW_VERSION = 1.0;
+const int queueSize = 50;
+
 unsigned long healthPreviousMillis = 0;
 unsigned long sensorPreviousMillis = 0;
 unsigned long healthInterval = 0;
@@ -13,10 +15,16 @@ unsigned long sensorInterval = 0;
 float lat = 0, lon = 0, accuracy = 0;
 int year = 0, month = 0, day = 0;
 int hour = 0, minute = 0, sec = 0;
+
 bool check_update;
+
+int lastAdded = -1;
+int lastSent = 0;
+int dataLoss = 0;
 
 String DEVICE_ID;
 String TRAVEL_ID;
+String MQTT_QUEUE[queueSize];
 
 //Personal Library
 #include <CarMonitor.CanBus.h>
@@ -73,6 +81,9 @@ void setup()
     sensorInterval = config["sensor_interval"].as<long>();
     log_d("setting variables - OK");
 
+    disableCore0WDT();
+    xTaskCreatePinnedToCore(sendSensorData, "Send MQTT Data", 5000, NULL, 15, NULL, 0);
+
     log_w("begin setup complete");
     delay(100);
 }
@@ -89,7 +100,7 @@ void loop()
     }
     
     if (currentMillis - sensorPreviousMillis >= sensorInterval){
-        sendSensorData();
+        getSensorData();
         sensorPreviousMillis = currentMillis;
     }
 }
