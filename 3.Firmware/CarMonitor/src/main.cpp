@@ -21,6 +21,7 @@ bool check_update;
 int lastAdded = -1;
 int lastSent = 0;
 int dataLoss = 0;
+int dataSent = 0;
 
 String DEVICE_ID;
 String TRAVEL_ID;
@@ -29,6 +30,7 @@ String MQTT_QUEUE[queueSize];
 //Personal Library
 #include <CarMonitor.CanBus.h>
 #include <CarMonior.OLED.h>
+#include <CarMonitor.RTC.h>
 #include <CarMonitor.File.h>
 #include <CarMonitor.GSM.h>
 #include <CarMonitor.HTTP.h>
@@ -50,6 +52,10 @@ void setup()
     log_d("setup OLED Screen Completed");
 
     printOledTextSingleLine("Iniciando Sistema");
+
+    log_d("setup RTC");
+    if (!setupRTC()) ESP.restart();
+    log_d("setup RTC Completed");
 
     log_d("configuring file system");
     if (!setupFile()) ESP.restart();
@@ -82,15 +88,13 @@ void setup()
     log_d("setting variables - OK");
 
     disableCore0WDT();
-    xTaskCreatePinnedToCore(sendSensorData, "Send MQTT Data", 5000, NULL, 15, NULL, 0);
+    xTaskCreatePinnedToCore(sendSensorData, "Send MQTT Data", 5000, NULL, 0, NULL, 0);
 
     log_w("begin setup complete");
     delay(100);
 }
 void loop()
 {
-    connectMQTT();
-
     unsigned long currentMillis = millis();
     
     if (currentMillis - healthPreviousMillis >= healthInterval)
@@ -103,4 +107,5 @@ void loop()
         getSensorData();
         sensorPreviousMillis = currentMillis;
     }
+    
 }

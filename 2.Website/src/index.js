@@ -1,7 +1,4 @@
-let rpmChart = null;
-let kmhChart = null;
 let carChart = null;
-let mqtt;
 let startDate = moment().startOf('day').subtract(3, 'hours').toISOString();
 let endDate = moment().subtract(3, 'hours').toISOString();
 let selectedCar = -1;
@@ -128,49 +125,9 @@ let client = {
         $("#travelsCard .overlay").addClass("d-none");
 
         this.setupChart();
-        //this.setupMQTT();
-    },
-    setupMQTT: function () {
-        var host = "rafaelgomes.ddns.net";
-        var port = 9001;
-        mqtt = new Paho.MQTT.Client(host, port, "clientjs");
-
-        var options = {
-            timeout: 3,
-            onSuccess: client.onConnectMQTT,
-            onFailure: client.onFailureMQTT,
-        };
-
-        mqtt.onMessageArrived = client.onMessageArrivedMQTT;
-
-        mqtt.connect(options);
-
-    },
-    onFailureMQTT: function (message) {
-        console.log(message);
-    },
-    onConnectMQTT: function () {
-        mqtt.subscribe("/sensors");
-        // message = new Paho.MQTT.Message("Hello World");
-        // message.destinationName = "/sensor1";
-        // mqtt.send(message);
-    },
-    onMessageArrivedMQTT: function (message) {
-        // let data = JSON.parse(message._getPayloadString());
-        // let dataRPM = data.sensors.find(x => x.pid == "0C").value;
-        // let dataKmh = data.sensors.find(x => x.pid == "0D").value;
-
-        // gaugeChart.setPoint(rpmChart, dataRPM);
-        // gaugeChart.setPoint(kmhChart, dataKmh);
-
-        return msg;
     },
     setupChart: function () {
-        // if (rpmChart != null) gaugeChart.clearChart(rpmChart);
-        // if (kmhChart != null) gaugeChart.clearChart(kmhChart);
         if (carChart != null) lineChart.clearChart(carChart);
-        // rpmChart = gaugeChart.setup("rpmChartContainer", 0, 9000, "Motor", "RPM", "RPM", "#F00");
-        // kmhChart = gaugeChart.setup("kmhChartContainer", 0, 220, "Velocidade", "velocidade", "Km/h", "#00F");
         carChart = lineChart.setup("carChartContainer", "Resumo");
     },
     selectCar: function (id) {
@@ -255,9 +212,6 @@ let client = {
         carChart.series[0].setData(dataKmh);
         carChart.series[1].setData(dataRPM);
 
-        // gaugeChart.setPoint(rpmChart, dataRPM[dataRPM.length - 1]);
-        // gaugeChart.setPoint(kmhChart, dataKmh[dataKmh.length - 1]);
-
         let maxRPM = 0;
         if (dataRPM.length > 0) maxRPM = Math.max.apply(Math, dataRPM.map(function (o) { return o[1]; }))
         let maxKMH = 0;
@@ -269,57 +223,6 @@ let client = {
         $("#chartCard .overlay").addClass("d-none");
     }
 };
-let gaugeChart = {
-    setup: function (id, min, max, title, name, unit, color) {
-        var json = {};
-        json.chart = {
-            type: 'gauge',
-            plotBackgroundColor: null,
-            plotBackgroundImage: null,
-            plotBorderWidth: 0,
-            plotShadow: false
-        };
-        json.credits = { enabled: false };
-        json.title = { text: title, enabled: false };;
-        json.pane = { startAngle: -150, endAngle: 150 };
-        json.yAxis = [{
-            min: min,
-            max: max,
-            lineColor: color,
-            tickColor: color,
-            minorTickColor: color,
-            offset: -25,
-            lineWidth: 2,
-            labels: { distance: -20, rotation: 'auto' },
-            tickLength: 5,
-            minorTickLength: 5,
-            endOnTick: false
-        }];
-
-        json.series = [{
-            name: name,
-            data: [0],
-            dataLabels: {
-                formatter: function () {
-                    return `<span style="color:#339">${this.y} ${unit}</span>`;
-                },
-                backgroundColor: {
-                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                    stops: [[0, '#DDD'], [1, '#FFF']]
-                }
-            },
-            tooltip: { valueSuffix: ` ${unit}` }
-        }];
-
-        return $(`#${id}`).highcharts(json);
-    },
-    setPoint: function (chart, point) {
-        $(chart).highcharts().series[0].points[0].update(point);
-    },
-    clearChart: function (chart) {
-        this.setPoint(chart, 0);
-    }
-}
 let lineChart = {
     setup: function (id, text) {
         return Highcharts.chart(`${id}`, {

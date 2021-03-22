@@ -27,11 +27,12 @@ void getSensorData(){
     float rpm = getRPM();
     float kmh = getKmh();
     
-    if(rpm == 0 && kmh == 0) return;
+    if(rpm == 0 || kmh == 0) return;
 
     log_d("creating json payload");
     StaticJsonDocument<256> json;
     json["travel_id"] = TRAVEL_ID;
+    json["unix_time"] = rtc.now().unixtime();
     JsonArray sensors = json.createNestedArray("sensors");
     JsonObject sensors_0 = sensors.createNestedObject();
     sensors_0["pid"] = "0C";
@@ -39,9 +40,6 @@ void getSensorData(){
     JsonObject sensors_1 = sensors.createNestedObject();
     sensors_1["pid"] = "0D";
     sensors_1["value"] = kmh;
-    // JsonObject sensors_2 = sensors.createNestedObject();
-    // sensors_2["pid"] = "46";
-    // sensors_2["value"] = getAirTemp();
 
     String payload = "";
     serializeJson(json, payload);
@@ -50,7 +48,6 @@ void getSensorData(){
     if (lastAdded >= queueSize) lastAdded = 0;
     if (MQTT_QUEUE[lastAdded] != "") dataLoss++;
     else MQTT_QUEUE[lastAdded] = payload;
-    log_e("Loss: %i",dataLoss);
 }
 void sendHealthStatus(){
     if (DEVICE_ID == "") return;
@@ -71,7 +68,9 @@ void sendHealthStatus(){
     json["location_lo"] = String(lon, 8);
     json["location_la"] = String(lat, 8);
     json["location_accuracy"] = String(accuracy);
-    
+    json["data_loss"] = dataLoss;
+    json["data_sent"] = dataSent;
+    json["unix_time"] = rtc.now().unixtime();
     String payload = "";
     serializeJson(json, payload);
     const char *c_payload = payload.c_str();
@@ -101,6 +100,7 @@ void registerDevice()
     json["operator"] = modem.getOperator();
     json["board"] = "ESP32";
     json["version"] = FW_VERSION;
+    json["unix_time"] = rtc.now().unixtime();
     String payload = "";
     serializeJson(json, payload);
     const char *c_payload = payload.c_str();
@@ -140,6 +140,7 @@ void registerCar()
     StaticJsonDocument<256> json;
     json["deviceId"] = DEVICE_ID;
     json["carVIN"] = VIN;
+    json["unix_time"] = rtc.now().unixtime();
     // json["carSensor"] = getSupportedPIDs();
     String payload = "";
     serializeJson(json, payload);
@@ -289,6 +290,7 @@ void sendSensorData(void * pvParameters){
     
     while (true)
     {
+        connectMQTT();
         for (int x = lastSent; x < queueSize; x++)
         {
             if (lastSent == (queueSize - 1)) lastSent = 0;
@@ -304,8 +306,10 @@ void sendSensorData(void * pvParameters){
                 else log_e("failed to publish sent payload");
             }
             MQTT_QUEUE[x] = "";
+            dataSent++;
             lastSent = x;
+            
         }
     }
-    vTaskDelay(10);
+    vTaskDelay(1);
 }
