@@ -47,11 +47,6 @@
             "method": "subscribe",
             "for": "login_car",
             "topic": "/login_car"
-        },
-        {
-            "method": "subscribe",
-            "for": "command",
-            "topic": "/command"
         }
     ]
 }

@@ -11,7 +11,6 @@ char *mqtt_register_device;
 char *mqtt_register_car;
 char *mqtt_login_device;
 char *mqtt_login_car;
-char *mqtt_command;
 char *mqtt_health;
 unsigned long loginPreviousMillis = 0;
 
@@ -46,8 +45,11 @@ void getSensorData(){
 
     lastAdded++;
     if (lastAdded >= queueSize) lastAdded = 0;
-    if (MQTT_QUEUE[lastAdded] != "") dataLoss++;
-    else MQTT_QUEUE[lastAdded] = payload;
+    if (MQTT_QUEUE[lastAdded].message != "") dataLoss++;
+    else {
+        MQTT_QUEUE[lastAdded].message = payload;
+        MQTT_QUEUE[lastAdded].topic = mqtt_sensors;
+    }
 }
 void sendHealthStatus(){
     if (DEVICE_ID == "") return;
@@ -73,14 +75,13 @@ void sendHealthStatus(){
     json["unix_time"] = rtc.now().unixtime();
     String payload = "";
     serializeJson(json, payload);
-    const char *c_payload = payload.c_str();
-    log_d("payload: %s", c_payload);
-    int p_length = strlen(c_payload);
-    log_d("publishing payload to topic: %s", mqtt_health);
-    boolean result = client.publish(mqtt_health, c_payload, p_length);
-    if (result) log_i("health payload sent");
-    else log_e("failed to publish health payload");
-    delay(100);
+    lastAdded++;
+    if (lastAdded >= queueSize) lastAdded = 0;
+    if (MQTT_QUEUE[lastAdded].message != "") dataLoss++;
+    else {
+        MQTT_QUEUE[lastAdded].message = payload;
+        MQTT_QUEUE[lastAdded].topic = mqtt_health;
+    }
 }
 void registerDevice()
 {
@@ -91,7 +92,6 @@ void registerDevice()
     loginPreviousMillis = currentMillis;
 
     log_d("register device");
-    printOledTextSingleLine("Registrando Dispositivo");
     log_d("creating json payload");
     StaticJsonDocument<256> json;
     json["imei"] = modem.getIMEI();
@@ -103,14 +103,13 @@ void registerDevice()
     json["unix_time"] = rtc.now().unixtime();
     String payload = "";
     serializeJson(json, payload);
-    const char *c_payload = payload.c_str();
-    log_d("payload: %s", c_payload);
-    int p_length = strlen(c_payload);
-    log_d("publishing payload to topic: %s", mqtt_register_device);
-    boolean result = client.publish(mqtt_register_device, c_payload, p_length);
-    if (result) log_i("register payload sent");
-    else log_e("failed to publish register payload");
-    delay(100);
+    lastAdded++;
+    if (lastAdded >= queueSize) lastAdded = 0;
+    if (MQTT_QUEUE[lastAdded].message != "") dataLoss++;
+    else {
+        MQTT_QUEUE[lastAdded].message = payload;
+        MQTT_QUEUE[lastAdded].topic = mqtt_register_device;
+    }
 }
 void registerCar()
 {
@@ -122,7 +121,6 @@ void registerCar()
     loginPreviousMillis = currentMillis;
 
     log_d("register car");
-    printOledTextSingleLine("Registrando Carro");
     log_d("creating json payload");
 
     String VIN = "";
@@ -141,17 +139,15 @@ void registerCar()
     json["deviceId"] = DEVICE_ID;
     json["carVIN"] = VIN;
     json["unix_time"] = rtc.now().unixtime();
-    // json["carSensor"] = getSupportedPIDs();
     String payload = "";
     serializeJson(json, payload);
-    const char *c_payload = payload.c_str();
-    log_d("payload: %s", c_payload);
-    int p_length = strlen(c_payload);
-    log_d("publishing payload to topic: %s", mqtt_register_car);
-    boolean result = client.publish(mqtt_register_car, c_payload, p_length);
-    if (result) log_i("register payload sent");
-    else log_e("failed to publish register payload");
-    delay(100);
+    lastAdded++;
+    if (lastAdded >= queueSize) lastAdded = 0;
+    if (MQTT_QUEUE[lastAdded].message != "") dataLoss++;
+    else {
+        MQTT_QUEUE[lastAdded].message = payload;
+        MQTT_QUEUE[lastAdded].topic = mqtt_register_car;
+    }
 }
 void loginDevice(byte *payload)
 {
@@ -160,7 +156,6 @@ void loginDevice(byte *payload)
     if (!deserializeJson(device, payload))
     {
         DEVICE_ID = device["id"].as<String>();
-        printOledTextSingleLine("Dispositivo Registrado\nID:" + DEVICE_ID);
         log_d("unsubscribing login topic");
         boolean result = client.unsubscribe(mqtt_login_device);
         log_d("unsubscribe login topic: %d", result);
@@ -181,7 +176,6 @@ void loginCar(byte *payload)
     if (!deserializeJson(device, payload))
     {
         TRAVEL_ID = device["travel_id"].as<String>();
-        printOledTextSingleLine("Carro Registrado\nTravel:" + TRAVEL_ID);
         log_d("unsubscribing login topic");
         boolean result = client.unsubscribe(mqtt_login_car);
         log_d("unsubscribe login topic: %d", result);
@@ -193,19 +187,6 @@ void loginCar(byte *payload)
     }
     delay(500);
 }
-void commandDevice(byte *payload){
-    log_d("MQTT Command Device");
-    DynamicJsonDocument command(128);
-    if (!deserializeJson(command, payload))
-    {
-        log_d("Receive Command: %d", command);
-    }
-    else
-    {
-        log_e("error to deserialize command payload");
-    }
-    delay(10);
-}
 void mqttCallback(char *topic, byte *payload, unsigned int length)
 {
     log_d("MQTT Callback");
@@ -216,7 +197,6 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
 
     if (strcmp(topic, mqtt_login_device) == 0) loginDevice(payload);
     else if (strcmp(topic, mqtt_login_car) == 0) loginCar(payload);
-    else if (strcmp(topic, mqtt_command) == 0) commandDevice(payload);
     else log_e("Topic is not implemented %s", topic);
 }
 void setupMQTT()
@@ -243,10 +223,8 @@ void connectMQTT()
         connect_gprs();
 
         log_d("Connecting to MQTT server");
-        printOledTextSingleLine("Conectando MQTT...");
         if (client.connect(DEVICE_ID.c_str(), mqtt_user, mqtt_pass))
         {
-            printOledTextSingleLine("MQTT Conectado");
             log_i("MQTT Connected");
             JsonArray topics = config["mqtt_topics"].as<JsonArray>();
             log_d("MQTT subscribing to topics");
@@ -255,16 +233,18 @@ void connectMQTT()
                 const char *method = topics[x]["method"].as<const char *>();
                 const char *isFor = topics[x]["for"].as<const char *>();
 
-                if (strcmp(isFor, "sensors") == 0) mqtt_sensors = (char *)topics[x]["topic"].as<char *>();
-                else if (strcmp(isFor, "register_device") == 0) mqtt_register_device = (char *)topics[x]["topic"].as<char *>();
-                else if (strcmp(isFor, "register_car") == 0) mqtt_register_car = (char *)topics[x]["topic"].as<char *>();
+                if (strcmp(isFor, "register_device") == 0) {
+                    if(DEVICE_ID != "") continue;
+                    mqtt_register_device = (char *)topics[x]["topic"].as<char *>();
+                }
+                else if (strcmp(isFor, "register_car") == 0) {
+                    if(TRAVEL_ID != "") continue;
+                    mqtt_register_car = (char *)topics[x]["topic"].as<char *>();
+                }
+                else if (strcmp(isFor, "sensors") == 0) mqtt_sensors = (char *)topics[x]["topic"].as<char *>();
                 else if (strcmp(isFor, "login_device") == 0) mqtt_login_device = (char *)topics[x]["topic"].as<char *>();
                 else if (strcmp(isFor, "login_car") == 0) mqtt_login_car = (char *)topics[x]["topic"].as<char *>();
                 else if (strcmp(isFor, "health") == 0) mqtt_health = (char *)topics[x]["topic"].as<char *>();
-                else if (strcmp(isFor, "command") == 0 && DEVICE_ID != "") {
-                    String t_command = topics[x]["topic"].as<String>() + "/" + DEVICE_ID;
-                    mqtt_command = (char*) t_command.c_str();
-                }
                 if (strcmp(method, "publish") == 0) continue;
 
                 const char *topic = topics[x]["topic"].as<const char *>();
@@ -285,8 +265,8 @@ void connectMQTT()
     if(TRAVEL_ID == "") registerCar();
     client.loop();
 }
-void sendSensorData(void * pvParameters){
-    log_i("Start Send Sensor Data");
+void sendMQTTData(void * pvParameters){
+    log_i("Start Send Data");
     
     while (true)
     {
@@ -294,22 +274,23 @@ void sendSensorData(void * pvParameters){
         for (int x = lastSent; x < queueSize; x++)
         {
             if (lastSent == (queueSize - 1)) lastSent = 0;
-            if (MQTT_QUEUE[x] == "") continue;
-            const char *c_payload = MQTT_QUEUE[x].c_str();
+            if (MQTT_QUEUE[x].message == "") continue;
+            const char *c_payload = MQTT_QUEUE[x].message.c_str();
             log_d("payload: %s", c_payload);
             int p_length = strlen(c_payload);
-            log_d("publishing payload to topic: %s", mqtt_sensors);
+            log_d("publishing payload to topic: %s", MQTT_QUEUE[x].topic);
             boolean result = false;
             while(!result){    
-                result = client.publish(mqtt_sensors, c_payload, p_length);
-                if (result) log_i("sensor payload sent");
+                result = client.publish(MQTT_QUEUE[x].topic, c_payload, p_length);
+                if (result) log_i("payload sent");
                 else log_e("failed to publish sent payload");
             }
-            MQTT_QUEUE[x] = "";
+            MQTT_QUEUE[x].message = "";
+            memset(MQTT_QUEUE[x].topic, 0, sizeof(MQTT_QUEUE[x].topic));
             dataSent++;
             lastSent = x;
             
         }
     }
-    vTaskDelay(1);
+    vTaskDelay(5);
 }

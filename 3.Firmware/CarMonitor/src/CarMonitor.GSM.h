@@ -51,14 +51,14 @@ void setup_gsm() {
   digitalWrite(MODEM_RST, HIGH);
   digitalWrite(MODEM_POWER_ON, HIGH);
   digitalWrite(MODEM_PWRKEY, HIGH);
-  delay(100);
+  delay(500);
   digitalWrite(MODEM_PWRKEY, LOW);
   delay(1000);
   digitalWrite(MODEM_PWRKEY, HIGH);
 
   log_d("begin serial modem");
   SerialAT.begin(115200,SERIAL_8N1,MODEM_RX,MODEM_TX);
-  delay(2000);
+  delay(3000);
 
   log_d("begin GSM Modem");
   printOledTextSingleLine("Iniciando Modem GSM");

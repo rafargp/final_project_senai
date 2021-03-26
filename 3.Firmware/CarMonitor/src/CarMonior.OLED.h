@@ -30,11 +30,11 @@ bool setupOled()
 }
 void printOledTextSingleLine(String text,bool serial=true)
 {
-    log_d("print OLED (Serial | Text): (%d | %s)",serial,text.c_str());
+    //log_d("print OLED (Serial | Text): (%d | %s)",serial,text.c_str());
     if(serial) Serial.println(text);
     display.clearDisplay();
     display.setCursor(0, 0);
     display.println(text);
     display.display();
-    delay(100);
+    delay(200);
 }

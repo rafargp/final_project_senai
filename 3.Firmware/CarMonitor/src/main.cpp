@@ -2,6 +2,11 @@
 
 //Definitions
 #define BAUD_RATE 115200
+//Structs
+struct MQTT_ITEM {
+    String message;
+    char* topic;
+};
 
 //Variables
 const float FW_VERSION = 1.0;
@@ -25,7 +30,7 @@ int dataSent = 0;
 
 String DEVICE_ID;
 String TRAVEL_ID;
-String MQTT_QUEUE[queueSize];
+MQTT_ITEM MQTT_QUEUE[queueSize];
 
 //Personal Library
 #include <CarMonitor.CanBus.h>
@@ -88,7 +93,7 @@ void setup()
     log_d("setting variables - OK");
 
     disableCore0WDT();
-    xTaskCreatePinnedToCore(sendSensorData, "Send MQTT Data", 5000, NULL, 0, NULL, 0);
+    xTaskCreatePinnedToCore(sendMQTTData, "Send MQTT Data", 5000, NULL, 0, NULL, 0);
 
     log_w("begin setup complete");
     delay(100);
@@ -107,5 +112,10 @@ void loop()
         getSensorData();
         sensorPreviousMillis = currentMillis;
     }
-    
+    String text = getTimeStampString() + "\n\n";
+    text += "Pacotes Enviados: " + String(dataSent) + "\n";
+    text += "Pacotes Perdidos: " + String(dataLoss) + "\n\n"; 
+    text += "Device Registrado: " + String(DEVICE_ID != "" ? "S":"N") + "\n"; 
+    text += "Carro Registrado: " + String(TRAVEL_ID != "" ? "S":"N"); 
+    printOledTextSingleLine(text,false);
 }
