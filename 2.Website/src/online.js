@@ -14,7 +14,7 @@ let client = {
         MQTT.connect("rafaelgomes.ddns.net", 9001, "", "", "web_client",client.onMessageArrivedMQTT);
         var trySubscribe = setInterval(function () {
             if (mqttClient.isConnected()) {
-                console.log(`MQTT -> Subscrever ao tópico "/stations/beacons/get"`)
+                console.log(`MQTT -> Subscrever ao tópico "/sensors"`)
                 MQTT.subscribe("/sensors", 0);
                 clearInterval(trySubscribe);
             }

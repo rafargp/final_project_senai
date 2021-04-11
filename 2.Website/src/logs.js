@@ -30,10 +30,11 @@ let client = {
 
         let html = `<div class="direct-chat-messages" style="height: 100%;">`;
         $(logs).each(function (i, item) {
+            let timestamp = moment.unix(item.timestamp).add(3, 'hours');
             html += `<div class="direct-chat-msg">`;
             html += `   <div class="direct-chat-infos clearfix">`;
             html += `       <span class="direct-chat-name float-left">${item.resource}</span>`;
-            html += `       <span class="direct-chat-timestamp float-right">${moment(item.timestamp).format('DD/MM/YYYY h:mm:ss a')}</span>`;
+            html += `       <span class="direct-chat-timestamp float-right">${timestamp.format('DD/MM/YYYY h:mm:ss a')}</span>`;
             html += `   </div>`;
             html += `   <img class="direct-chat-img" src="${LTE.getResourceImage(item.resource)}">`;
             html += `   <div class="direct-chat-text">`;

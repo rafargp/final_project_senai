@@ -37,7 +37,21 @@ bool connect_gprs(){
   }
   return true;
 }
-
+bool getLocation(){
+  log_d("getting date and location");
+  bool result = modem.getGsmLocation(&lat, &lon, &accuracy, &year, &month, &day, &hour, &minute, &sec);
+  
+  log_d("Requesting current GSM location");
+  if (result) {
+      hour = hour - 3;
+      log_d("Accuracy: %f", accuracy);
+      log_d("Location: %s,%s", String(lon, 10).c_str(), String(lat, 10).c_str());
+      log_d("Date/Time: %i/%i/%i %i:%i:%i", day, month, year, hour, minute, sec);
+  } else {
+      log_d("Couldn't get GSM location");
+  }
+  return result;
+}
 void setup_gsm() {
   log_d("setting GSM variables");
   gsm_apn = config["gsm_apn"].as<char *>();
@@ -77,23 +91,14 @@ void setup_gsm() {
 
   connect_gprs();
   log_i("connected to GSM Internet");
+  
+  log_i("Getting DateTime from GSM");
+  bool result = getLocation();
+  while(!result) result = getLocation();
+
   printOledTextSingleLine("Setup GSM OK");
 }
-bool getLocation(){
-  log_d("getting date and location");
-  bool result = modem.getGsmLocation(&lat, &lon, &accuracy, &year, &month, &day, &hour, &minute, &sec);
-  
-  log_d("Requesting current GSM location");
-  if (result) {
-      hour = hour - 3;
-      log_d("Accuracy: %f", accuracy);
-      log_d("Location: %s,%s", String(lon, 10).c_str(), String(lat, 10).c_str());
-      log_d("Date/Time: %i/%i/%i %i:%i:%i", day, month, year, hour, minute, sec);
-  } else {
-      log_d("Couldn't get GSM location");
-  }
-  return result;
-}
+
 String getIP(){
   if(gsm_ip != "") return gsm_ip;
   gsm_ip = modem.localIP().toString();

@@ -12,7 +12,9 @@ $(document).ready(function () {
     });
     $(document).on("click","#btnSaveCar",function(e){
         let id = $(this).data("id");
-        client.editCar(id);
+        let name = $("#txtDeviceName").val();
+        let profile = $("#slProfile option:selected").val();
+        client.editCar(id,name,profile);
     });
 
     client.setup();
@@ -20,7 +22,6 @@ $(document).ready(function () {
 });
 let client = {
     setup: function () {
-
         $("#devicesCard .overlay").removeClass("d-none");
 
         let devices = Devices.getAll();
@@ -30,6 +31,14 @@ let client = {
         });
         $("#devicesContainer").html(html);
 
+        let option = new Option("Nenhum",-1,false, true);
+        $("#slProfile").append(option);
+        let profiles = Profile.getAll();
+        $(profiles).each(function(i,item){
+            let option = new Option(item.title,item._id,false, false);
+            $("#slProfile").append(option);
+        });
+        
         $("#devicesCard .overlay").addClass("d-none");
     },
     selectMicrochip: function(id){
@@ -53,18 +62,20 @@ let client = {
         if(car.length == 0) return;
         else car = car[0];
         if(car.name != undefined) $("#txtDeviceName").val(car.name);   
+        if(car.profile != undefined) $(`#slProfile option[value='${car.profile}']`).prop('selected', true);
         $("#txtCarVin").val(car.carVIN);
         $("#txtCarVin").prop("disabled",true);
         $("#btnSaveCar").data("id",id);
     },
-    editCar(id){
+    editCar(id,name,profile){
         let device = Cars.getById(id);
         if(device.length == 0) return;
         let carIndex = device[0].cars.findIndex(x => x.carVIN==id);
-        if(carIndex == -1) return;
-        
-        let carName = $("#txtDeviceName").val();   
-        device[0].cars[carIndex].name = carName;
+        if(carIndex == -1) return;        
+        device[0].cars[carIndex].name = name;
+        if(profile != -1) device[0].cars[carIndex].profile = profile;
+        else delete device[0].cars[carIndex].profile;
+
         Cars.update(id,device[0]);
         Toast.fire({
             icon: 'success',

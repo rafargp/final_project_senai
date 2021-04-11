@@ -2,6 +2,7 @@
 
 //Definitions
 #define BAUD_RATE 115200
+
 //Structs
 struct MQTT_ITEM {
     String message;
@@ -17,7 +18,7 @@ unsigned long sensorPreviousMillis = 0;
 unsigned long healthInterval = 0;
 unsigned long sensorInterval = 0;
 
-float lat = 0, lon = 0, accuracy = 0;
+float lat = 0, lon = 0, accuracy = 0, timezone = 0;
 int year = 0, month = 0, day = 0;
 int hour = 0, minute = 0, sec = 0;
 
@@ -58,10 +59,6 @@ void setup()
 
     printOledTextSingleLine("Iniciando Sistema");
 
-    log_d("setup RTC");
-    if (!setupRTC()) ESP.restart();
-    log_d("setup RTC Completed");
-
     log_d("configuring file system");
     if (!setupFile()) ESP.restart();
     log_d("configuration file system completed");
@@ -73,6 +70,10 @@ void setup()
     log_d("configuring GSM");
     setup_gsm();
     log_d("configuration GSM - OK");
+
+    log_d("setup RTC");
+    if (!setupRTC()) ESP.restart();
+    log_d("setup RTC Completed");
 
     log_d("update Configuration");
     updateConfiguration(false);
@@ -93,6 +94,7 @@ void setup()
     log_d("setting variables - OK");
 
     disableCore0WDT();
+    
     xTaskCreatePinnedToCore(sendMQTTData, "Send MQTT Data", 5000, NULL, 0, NULL, 0);
 
     log_w("begin setup complete");

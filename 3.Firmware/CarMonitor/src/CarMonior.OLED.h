@@ -11,6 +11,8 @@
 //Variables
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+String buffer;
+
 bool setupOled()
 {
     log_d("begin OLED");
@@ -32,9 +34,11 @@ void printOledTextSingleLine(String text,bool serial=true)
 {
     //log_d("print OLED (Serial | Text): (%d | %s)",serial,text.c_str());
     if(serial) Serial.println(text);
+    if(buffer == text) return;
+    buffer = text;
     display.clearDisplay();
     display.setCursor(0, 0);
     display.println(text);
     display.display();
-    delay(200);
+    delay(100);
 }

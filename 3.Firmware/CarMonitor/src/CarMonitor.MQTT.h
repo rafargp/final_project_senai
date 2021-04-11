@@ -31,7 +31,7 @@ void getSensorData(){
     log_d("creating json payload");
     StaticJsonDocument<256> json;
     json["travel_id"] = TRAVEL_ID;
-    json["unix_time"] = rtc.now().unixtime();
+    json["unix_time"] = getCurrentDateTime();
     JsonArray sensors = json.createNestedArray("sensors");
     JsonObject sensors_0 = sensors.createNestedObject();
     sensors_0["pid"] = "0C";
@@ -60,7 +60,7 @@ void sendHealthStatus(){
     if(!getLocation()) return;
         
     log_d("creating json payload");
-    StaticJsonDocument<256> json;
+    StaticJsonDocument<512> json;
         
     json["device_id"] = DEVICE_ID;
     json["ip"] = getIP();
@@ -72,7 +72,7 @@ void sendHealthStatus(){
     json["location_accuracy"] = String(accuracy);
     json["data_loss"] = dataLoss;
     json["data_sent"] = dataSent;
-    json["unix_time"] = rtc.now().unixtime();
+    json["unix_time"] = getCurrentDateTime();
     String payload = "";
     serializeJson(json, payload);
     lastAdded++;
@@ -100,7 +100,7 @@ void registerDevice()
     json["operator"] = modem.getOperator();
     json["board"] = "ESP32";
     json["version"] = FW_VERSION;
-    json["unix_time"] = rtc.now().unixtime();
+    json["unix_time"] = getCurrentDateTime();
     String payload = "";
     serializeJson(json, payload);
     lastAdded++;
@@ -138,7 +138,7 @@ void registerCar()
     StaticJsonDocument<256> json;
     json["deviceId"] = DEVICE_ID;
     json["carVIN"] = VIN;
-    json["unix_time"] = rtc.now().unixtime();
+    json["unix_time"] = getCurrentDateTime();
     String payload = "";
     serializeJson(json, payload);
     lastAdded++;
@@ -283,13 +283,16 @@ void sendMQTTData(void * pvParameters){
             while(!result){    
                 result = client.publish(MQTT_QUEUE[x].topic, c_payload, p_length);
                 if (result) log_i("payload sent");
-                else log_e("failed to publish sent payload");
+                else {
+                    connectMQTT();
+                    log_e("failed to publish sent payload");
+                }
             }
             MQTT_QUEUE[x].message = "";
-            memset(MQTT_QUEUE[x].topic, 0, sizeof(MQTT_QUEUE[x].topic));
+            MQTT_QUEUE[x].topic = "";
+            // memset(MQTT_QUEUE[x].topic, 0, sizeof(MQTT_QUEUE[x].topic));
             dataSent++;
             lastSent = x;
-            
         }
     }
     vTaskDelay(5);

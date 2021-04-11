@@ -62,12 +62,12 @@
         <div class="container-fluid">
           <div class="row mb-2">
             <div class="col-sm-6">
-              <h1 class="m-0">Carros</h1>
+              <h1 class="m-0">Perfil</h1>
             </div>
             <div class="col-sm-6">
               <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item active">Carros</li>
+                <li class="breadcrumb-item active">Perfil</li>
               </ol>
             </div>
           </div>
@@ -77,40 +77,22 @@
       <section class="content">
         <div class="container-fluid">
           <div class="row">
-            <div class="col-md-6">
-              <div class="card card-info" id="devicesCard">
+            <div class="col-md-12">
+              <div class="card card-info" id="profileCard">
                 <div class="card-header">
-                  <h3 class="card-title"><i class="fa fa-microchip"></i>&nbsp;&nbsp;&nbsp;Meus Dispositivos</h3>
                   <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                      <i class="fas fa-minus"></i>
+                    <button type="button" class="btn btn-tool" id="btnRefresh">
+                      <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button type="button" class="btn btn-tool" id="btnNewProfile">
+                      <i class="fas fa-plus"></i>
                     </button>
                   </div>
+                  <h3 class="card-title">Perfis</h3>         
                 </div>
-                <div class="card-body" id="devicesContainer">
-                  
+                <div class="card-body" id="profilesContainer">
                 </div>
-                
-                <div class="overlay">
-                  <i class="fas fa-spin fa-2x fa-sync-alt"></i>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card card-info d-none" id="carsCard">
-                <div class="card-header">
-                  <h3 class="card-title"><i class="fa fa-car"></i>&nbsp;&nbsp;&nbsp;Meus Carros</h3>
-                  <div class="card-tools">
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                      <i class="fas fa-minus"></i>
-                    </button>
-                  </div>
-                </div>
-                <div class="card-body" id="carsContainer">
-                  
-                </div>
-                
-                <div class="overlay">
+                <div class="overlay d-none">
                   <i class="fas fa-spin fa-2x fa-sync-alt"></i>
                 </div>
               </div>
@@ -118,40 +100,61 @@
           </div>
           <div class="row">
             <div class="col-md-12">
-              <div class="card card-info d-none" id="carForm">
+              <div class="card card-info" id="formProfileCard" style="display: none;">
                 <div class="card-header">
-                  <h3 class="card-title">Editar Dados do Carro</h3>
                   <div class="card-tools">
-                    <button type="button" class="btn btn-tool" id="btnSaveCar">
+                    <button type="button" class="btn btn-tool" id="btnSaveProfile">
                       <i class="fas fa-save"></i> &nbsp; Salvar
                     </button>
                   </div>
+                  <h3 class="card-title">Cadastro/Edição de Perfil</h3>         
                 </div>
-                <div class="card-body">
+                <div class="card-body" id="newProfileContainer">
                   <div class="row">
-                    <div class="form-group col">
-                      <label for="txtCarVin">Chassi</label>
-                      <div class="input-group">
-                        <input type="text" class="form-control" id="txtCarVin">
-                        <div class="input-group-append">
-                          <span class="input-group-text">A-Z</span>
-                        </div>
-                      </div>                      
-                    </div>
-                    <div class="form-group col">
-                      <label for="txtDeviceName">Nome</label>
-                      <div class="input-group">
-                        <input type="text" class="form-control" id="txtDeviceName">
-                        <div class="input-group-append">
-                          <span class="input-group-text">A-Z</span>
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="title">Título</label>
+                        <div class="input-group mb-3">
+                          <input id="title" placeholder="Nome do Perfil" type="text" class="form-control">
+                          <div class="input-group-append">
+                            <span class="input-group-text">A-Z</span>
+                          </div>
                         </div>
                       </div>  
                     </div>
-                    <div class="form-group col">
-                      <label for="slProfile">Perfil</label>
-                      <select id="slProfile" class="form-control">
-                      </select>
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="maxPower">Potência Maxima (RPM)</label>
+                        <div class="input-group mb-3">
+                          <input id="maxPower" placeholder="Potência Máxima (RPM)" type="number" class="form-control">
+                          <div class="input-group-append">
+                            <span class="input-group-text">0-9</span>
+                          </div>
+                        </div>
+                      </div>  
                     </div>
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="maxTorqueStart">Início Torque Máximo (RPM)</label>
+                        <div class="input-group mb-3">
+                          <input id="maxTorqueStart" placeholder="Início Toque Máximo (RPM)" type="number" class="form-control">
+                          <div class="input-group-append">
+                            <span class="input-group-text">0-9</span>
+                          </div>
+                        </div>
+                      </div>  
+                    </div>  
+                    <div class="col">
+                      <div class="form-group">
+                        <label for="maxTorqueEnd">Fim Torque Máximo (RPM)</label>
+                        <div class="input-group mb-3">
+                          <input id="maxTorqueEnd" placeholder="Fim Toque Máximo (RPM)" type="number" class="form-control">
+                          <div class="input-group-append">
+                            <span class="input-group-text">0-9</span>
+                          </div>
+                        </div>
+                      </div>  
+                    </div>  
                   </div>
                 </div>
                 <div class="overlay d-none">
@@ -195,7 +198,7 @@
   <script src="dist/js/adminlte.min.js"></script>
   <script src="src/site.js"></script>
   <script src="src/api.js"></script>
-  <script src="src/cars.js"></script>
+  <script src="src/profile.js"></script>
 </script>  
 </script>
 </body>

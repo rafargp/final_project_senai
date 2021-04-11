@@ -123,6 +123,47 @@ const Cars = {
 		return full;
 	}
 };
+let Profile = {
+	getAll: function(filter=null){
+        var result = $.ajax({
+			url: `${endpoint}/profiles`,
+			type: "GET",
+			data: filter,
+			async: false,
+			headers: { "ACCEPT": "application/json;odata=verbose" },
+		});
+		return result.responseJSON;
+	},
+	getById: function(id){
+        var result = $.ajax({
+			url: `${endpoint}/profile/${id}`,
+			type: "GET",
+			async: false,
+			headers: { "ACCEPT": "application/json;odata=verbose" },
+		});
+		return result.responseJSON;
+    },
+	newProfile: function(data){
+		var result = $.ajax({
+			url: `${endpoint}/profile`,
+			data: data,
+			type: "POST",
+			async: false,
+			headers: { "ACCEPT": "application/json;odata=verbose" },
+		});
+		return result.responseJSON;
+	},
+	editProfile: function(id, data){
+		var result = $.ajax({
+			url: `${endpoint}/profile/${id}`,
+			data: data,
+			type: "POST",
+			async: false,
+			headers: { "ACCEPT": "application/json;odata=verbose" },
+		});
+		return result.responseJSON;
+	}
+};
 let Logs = {
 	getAll: function(filter=null){
         var result = $.ajax({

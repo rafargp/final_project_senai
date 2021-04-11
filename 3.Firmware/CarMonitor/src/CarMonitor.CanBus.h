@@ -1,15 +1,5 @@
 #include <CAN.h>
 
-// #ifdef DEFAULT_CAN_RX_PIN
-// #undef DEFAULT_CAN_RX_PIN
-// #define DEFAULT_CAN_RX_PIN 15
-// #endif 
-
-// #ifdef DEFAULT_CAN_TX_PIN
-// #undef DEFAULT_CAN_TX_PIN
-// #define DEFAULT_CAN_TX_PIN 18
-// #endif 
-
 #define TIMEOUT 3000 //Seconds
 
 const bool useStandardAddressing = true;
