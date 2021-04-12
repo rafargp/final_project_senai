@@ -1,6 +1,6 @@
 let carChart = null;
-let startDate = moment().startOf('day').valueOf();
-let endDate = moment().valueOf();
+let startDate = moment().startOf('day').subtract('hour',3).valueOf();
+let endDate = moment().subtract('hour',3).valueOf();
 let selectedCar = -1;
 let selectedTravel = -1;
 let carState = "All";
@@ -25,11 +25,6 @@ $(document).ready(function () {
         $(this).find('td').first().addClass(`font-weight-bold`);
         client.selectTravel(id, startDate, endDate, carState);
     });
-    $(document).on("change", "#CarState", function (e) {
-        e.preventDefault();
-        carState = $("#CarState option:selected").val();
-        client.selectTravel(selectedTravel, startDate, endDate, carState);
-    });
     $(document).on("click","[name=btnRefreshData]",function(e){
         client.selectCar(selectedCar, startDate, endDate, carState);
     });
@@ -37,6 +32,7 @@ $(document).ready(function () {
         let increment = $("#timeIncrement").val();
         let nDateTime = moment.unix(startDate/1000).add(increment,'minutes');
         startDate = nDateTime.valueOf();
+        nDateTime = nDateTime.add('hour',3);
         $("#reservationtime").data('daterangepicker').setStartDate(nDateTime);
         client.setupTravels(selectedCar);
         client.selectTravel(selectedTravel, startDate, endDate, carState);
@@ -45,6 +41,7 @@ $(document).ready(function () {
         let increment = $("#timeIncrement").val();
         let nDateTime = moment.unix(startDate/1000).subtract(increment,'minutes');
         startDate = nDateTime.valueOf();
+        nDateTime = nDateTime.add('hour',3);
         $("#reservationtime").data('daterangepicker').setStartDate(nDateTime);
         client.setupTravels(selectedCar);
         client.selectTravel(selectedTravel, startDate, endDate, carState);
@@ -53,6 +50,7 @@ $(document).ready(function () {
         let increment = $("#timeIncrement").val();
         let nDateTime = moment.unix(endDate/1000).add(increment,'minutes');
         endDate = nDateTime.valueOf();
+        nDateTime = nDateTime.add('hour',3);
         $("#reservationtime").data('daterangepicker').setEndDate(nDateTime);
         client.setupTravels(selectedCar);
         client.selectTravel(selectedTravel, startDate, endDate, carState);
@@ -61,6 +59,7 @@ $(document).ready(function () {
         let increment = $("#timeIncrement").val();
         let nDateTime = moment.unix(endDate/1000).subtract(increment,'minutes');
         endDate = nDateTime.valueOf();
+        nDateTime = nDateTime.add('hour',3);
         $("#reservationtime").data('daterangepicker').setEndDate(nDateTime);
         client.setupTravels(selectedCar);
         client.selectTravel(selectedTravel, startDate, endDate, carState);
@@ -68,22 +67,20 @@ $(document).ready(function () {
 
     $('#reservationtime').daterangepicker(
         {
-            showTimezone: true,
             timePicker: true,
             timePickerIncrement: 1,
             //minDate: moment(),
             //maxDate: moment().add(6, 'month'),
-            //maxDate: moment(),
             //dateLimit: { days: 5 },
-            startDate: moment().startOf('day'),
-            endDate: moment().endOf("day"),
+            startDate: moment.unix(startDate/1000).add('hour',3),
+            endDate: moment.unix(endDate/1000).add('hour',3),
             locale: {
                 format: 'DD/MM/YYYY hh:mm:ss A'
             },
         },
         function (start, end) {
-            startDate = start.valueOf();
-            endDate = end.valueOf();
+            startDate = start.subtract('hour',3).valueOf();
+            endDate = end.subtract('hour',3).valueOf();
             client.setupTravels(selectedCar);
             client.selectTravel(selectedTravel, startDate, endDate, carState);
         }
@@ -163,7 +160,7 @@ let client = {
         let selected = false
         $(travels).each(function (i, item) {
             if(item.id == selectedTravel) selected = true;
-            let ts = new Date(item.timestamp*1000);
+            let ts = new Date((item.timestamp+10800)*1000);
             let title = `${ts.toLocaleDateString()} ${ts.toLocaleTimeString()}`;
             html += `<tr data-id="${item.id}" name="btnTravel">`;
             html += `<td class="${item.id == selectedTravel?"font-weight-bold":""}"> ${title} [${item.records}]</td>`;
@@ -205,8 +202,8 @@ let client = {
             dataKmh = Travels.getSensors(id, "0D", startDate, endDate, carState);
         }
 
-        dataRPM = dataRPM.map(x => [(x.receive_date-10800)*1000, x.value]);
-        dataKmh = dataKmh.map(x => [(x.receive_date-10800)*1000, x.value]);
+        dataRPM = dataRPM.map(x => [x.receive_date*1000, x.value]);
+        dataKmh = dataKmh.map(x => [x.receive_date*1000, x.value]);
 
         carChart.series[0].setData(dataKmh);
         carChart.series[1].setData(dataRPM);

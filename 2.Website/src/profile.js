@@ -7,7 +7,7 @@ $(document).ready(function () {
         $("#maxPower").val("");
         $("#maxTorqueStart").val("");
         $("#maxTorqueEnd").val("");
-        $("#formProfileCard").data("operation",1);
+        $("#btnSaveProfile").data("operation",1);
         $("#formProfileCard").show();
     });
     $(document).on("click","#btnSaveProfile",function(e){
@@ -37,7 +37,7 @@ $(document).ready(function () {
         $("#maxTorqueEnd").val(profile[0].maxTorque.end);
         
         $("#btnSaveProfile").data("id",id);
-        $("#formProfileCard").data("operation",2);
+        $("#btnSaveProfile").data("operation",2);
         $("#formProfileCard").show();
     });
     client.setup();
