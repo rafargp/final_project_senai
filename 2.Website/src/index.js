@@ -11,9 +11,7 @@ $(document).ready(function () {
         e.preventDefault();
         let id = $(this).data("id");
         selectedCar = id;
-        $("#carsContainer .badge").each(function (i, badge) {
-            badge.remove();
-        });
+        $("#carsContainer .badge").each(function (i, badge) { badge.remove(); });
         $(this).append(`<span class="badge bg-warning">Selecionado</span>`);
         client.selectCar(id, startDate, endDate, carState);
     });
@@ -70,7 +68,7 @@ $(document).ready(function () {
             timePicker: true,
             timePickerIncrement: 1,
             //minDate: moment(),
-            //maxDate: moment().add(6, 'month'),
+            //maxDate: moment().add(1, 'month'),
             //dateLimit: { days: 5 },
             startDate: moment.unix(startDate/1000).add('hour',3),
             endDate: moment.unix(endDate/1000).add('hour',3),
@@ -87,7 +85,6 @@ $(document).ready(function () {
     );
 
     client.setup();
-
 });
 let client = {
     setup: function () {
@@ -129,10 +126,7 @@ let client = {
     },
     selectCar: function (id) {
         if (id == -1) {
-            Toast.fire({
-                icon: 'warning',
-                title: 'Selecione um Carro!'
-            });
+            Toast.fire({ icon: 'warning', title: 'Selecione um Carro!' });
             return;
         }
 
@@ -176,23 +170,16 @@ let client = {
     },
     selectTravel: function (id, startDate = null, endDate = null, carState = null) {
         if (id == -1) {
-            Toast.fire({
-                icon: 'warning',
-                title: 'Selecione uma Viagem!'
-            });
+            Toast.fire({ icon: 'warning', title: 'Selecione uma Viagem!'});
             return;
         } else if (selectedCar == -1) {
-            Toast.fire({
-                icon: 'warning',
-                title: 'Selecione um Carro!'
-            });
+            Toast.fire({ icon: 'warning', title: 'Selecione um Carro!' });
             return;
         }
         $("#chartCard .overlay").removeClass("d-none");
         this.setupChart();
 
-        let dataRPM;
-        let dataKmh;
+        let dataRPM, dataKmh;
 
         if (id == "All") {
             dataRPM = Cars.getSensors(selectedCar, "0C", startDate, endDate, carState);
