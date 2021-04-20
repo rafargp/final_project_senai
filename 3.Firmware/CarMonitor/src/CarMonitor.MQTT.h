@@ -1,5 +1,6 @@
 #include <PubSubClient.h>
 
+#define LOGIN_TIMEOUT 20000
 //Variables
 uint8_t message_char_buffer[MQTT_MAX_PACKET_SIZE];
 const char *mqtt_server;
@@ -13,6 +14,7 @@ char *mqtt_login_device;
 char *mqtt_login_car;
 char *mqtt_health;
 unsigned long loginPreviousMillis = 0;
+
 
 PubSubClient client(gsm_client);
 
@@ -58,7 +60,7 @@ void sendHealthStatus(){
 
     log_d("update gsm data to sent");
     if(!getLocation()) return;
-        
+    
     log_d("creating json payload");
     StaticJsonDocument<512> json;
         
@@ -88,7 +90,7 @@ void registerDevice()
     if (DEVICE_ID != "") return;
 
     unsigned long currentMillis = millis();
-    if (currentMillis - loginPreviousMillis < 10000) return;
+    if (currentMillis - loginPreviousMillis < LOGIN_TIMEOUT) return;
     loginPreviousMillis = currentMillis;
 
     log_d("register device");
@@ -117,7 +119,7 @@ void registerCar()
     if (TRAVEL_ID != "") return;
 
     unsigned long currentMillis = millis();
-    if (currentMillis - loginPreviousMillis < 20000) return;
+    if (currentMillis - loginPreviousMillis < LOGIN_TIMEOUT) return;
     loginPreviousMillis = currentMillis;
 
     log_d("register car");
@@ -160,6 +162,7 @@ void loginDevice(byte *payload)
         boolean result = client.unsubscribe(mqtt_login_device);
         log_d("unsubscribe login topic: %d", result);
         log_d("Calling Register Car");
+        loginPreviousMillis = millis() + LOGIN_TIMEOUT;
         registerCar();
     }
     else

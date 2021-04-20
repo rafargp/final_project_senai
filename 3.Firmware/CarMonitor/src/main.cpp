@@ -20,7 +20,7 @@ unsigned long sensorInterval = 0;
 
 float lat = 0, lon = 0, accuracy = 0, timezone = 0;
 int year = 0, month = 0, day = 0;
-int hour = 0, minute = 0, sec = 0;
+int hour = 0, minute = 0, sec = 0, tz = 0;
 
 bool check_update;
 
@@ -36,9 +36,9 @@ MQTT_ITEM MQTT_QUEUE[queueSize];
 //Personal Library
 #include <CarMonitor.CanBus.h>
 #include <CarMonior.OLED.h>
-#include <CarMonitor.RTC.h>
 #include <CarMonitor.File.h>
 #include <CarMonitor.GSM.h>
+#include <CarMonitor.RTC.h>
 #include <CarMonitor.HTTP.h>
 #include <CarMonitor.Helper.h>
 #include <CarMonitor.MQTT.h>

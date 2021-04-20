@@ -4,6 +4,12 @@
 
 const bool useStandardAddressing = true;
 
+/* 
+Caso a Biblioteca Atualize
+#define DEFAULT_CAN_RX_PIN GPIO_NUM_15
+#define DEFAULT_CAN_TX_PIN GPIO_NUM_18
+*/
+
 String getSupportedPIDs()
 {
   log_d("getting supprted PIDs");
