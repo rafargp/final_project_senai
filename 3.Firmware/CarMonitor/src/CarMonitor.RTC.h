@@ -1,7 +1,7 @@
 #include <RTClib.h>
 
 RTC_DS3231 rtc;
-int unix_reference;
+int unix_reference = -1;
 
 bool setupRTC()
 {
@@ -11,22 +11,28 @@ bool setupRTC()
         return false;
     }
 
-    delay(50);
     rtc.adjust(DateTime(year,month,day,hour,minute,sec));
     delay(50);
 
-    DateTime now = rtc.now();
-    unix_reference = now.unixtime();
-    log_d("DateTime: %i/%i/%i %i:%i:%i", now.day(),now.month(),now.year(),now.hour(),now.minute(),now.second());
     return true;
 }
-int getCurrentDateTime(){
-    int currntUnix = rtc.now().unixtime();
-    while(currntUnix - unix_reference <= 0) currntUnix = rtc.now().unixtime();
+DateTime getCurrentDateTime(){
+    DateTime now = rtc.now();
+    while(now.year() < 2021) now = rtc.now();
+    return now;
+}
+int getCurrentUnixtime(){
+    DateTime now = getCurrentDateTime();
+
+    if(unix_reference == -1) unix_reference = now.unixtime();
+    int currntUnix = now.unixtime();
+
+    while(currntUnix - unix_reference < 0) currntUnix = rtc.now().unixtime();
+    
     return currntUnix;
 }
 String getTimeStampString(){
-    DateTime now = rtc.now();
+    DateTime now = getCurrentDateTime();
     char buff[] = "DD/MM/YYYY hh:mm";
     const char* result = now.toString(buff);
     return String(result);

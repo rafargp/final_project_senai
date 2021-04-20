@@ -31,7 +31,7 @@ void getSensorData(){
     log_d("creating json payload");
     StaticJsonDocument<256> json;
     json["travel_id"] = TRAVEL_ID;
-    json["unix_time"] = getCurrentDateTime();
+    json["unix_time"] = getCurrentUnixtime();
     JsonArray sensors = json.createNestedArray("sensors");
     JsonObject sensors_0 = sensors.createNestedObject();
     sensors_0["pid"] = "0C";
@@ -72,7 +72,7 @@ void sendHealthStatus(){
     json["location_accuracy"] = String(accuracy);
     json["data_loss"] = dataLoss;
     json["data_sent"] = dataSent;
-    json["unix_time"] = getCurrentDateTime();
+    json["unix_time"] = getCurrentUnixtime();
     String payload = "";
     serializeJson(json, payload);
     lastAdded++;
@@ -100,7 +100,7 @@ void registerDevice()
     json["operator"] = modem.getOperator();
     json["board"] = "ESP32";
     json["version"] = FW_VERSION;
-    json["unix_time"] = getCurrentDateTime();
+    json["unix_time"] = getCurrentUnixtime();
     String payload = "";
     serializeJson(json, payload);
     lastAdded++;
@@ -138,7 +138,7 @@ void registerCar()
     StaticJsonDocument<256> json;
     json["deviceId"] = DEVICE_ID;
     json["carVIN"] = VIN;
-    json["unix_time"] = getCurrentDateTime();
+    json["unix_time"] = getCurrentUnixtime();
     String payload = "";
     serializeJson(json, payload);
     lastAdded++;

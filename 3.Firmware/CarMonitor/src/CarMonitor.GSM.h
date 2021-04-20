@@ -93,9 +93,13 @@ void setup_gsm() {
   log_i("connected to GSM Internet");
   
   log_i("Getting DateTime from GSM");
+  printOledTextSingleLine("Atualizando Data e Hora");
+  
   bool result = getLocation();
   while(!result) result = getLocation();
-
+  while(year < 2021) result = getLocation();
+  while(hour <= -1) result = getLocation();
+  
   printOledTextSingleLine("Setup GSM OK");
 }
 
